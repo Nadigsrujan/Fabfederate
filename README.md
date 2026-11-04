@@ -80,7 +80,7 @@ mainel/
 │   ├── experiments/             # Each study's models, features and results
 │   └── inference/               # Input examples, predictions and explanations
 ├── tests/                       # Python scientific correctness and regression tests
-└── docs/                        # Implementation report, dataset cards and evidence
+└── docs/                        # Implementation, dataset cards, decisions and findings
 ```
 
 The three supplied project PDFs stay in the root. Dependency folders such as `.venv/` and `frontend/node_modules/`, generated builds, raw datasets and large model artifacts are excluded from Git. Proposed CNN, cloud, database and machine-control files are not added as empty placeholders.

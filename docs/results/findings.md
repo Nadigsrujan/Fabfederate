@@ -10,7 +10,7 @@ Completed offline public-data research implementation, 4 November 2026. This sum
 - Separate seed11 FFT-feature and15-round efficiency experiments. FFT extends36 to54 predictors; it analyzes already processed250Hz sensor signals, not raw high-frequency acoustic recordings.
 - Model-specific SHAP examples across held-out groups and repeated seeds, plus feature-noise robustness and missing-feature rejection.
 - Fresh-process reproduction of IID seed11: all4905 saved prediction rows exactly match the original study. The locked environment is shared; this is not new independent experimental data.
-- Final tests:88 passed. Ruff and dependency checks passed. Two upstream Typer/Click deprecation warnings remain; no project test is skipped.
+- Run the current correctness checks with `make test` and `make check`; setup and command details are in the [root README](../../README.md).
 
 ## Observed held-out errors
 
@@ -99,4 +99,4 @@ The implementation is software-complete for the required offline study. Physical
 
 The exact training-source file digests match local Git commit `f4d8caa`, recorded in the completed study manifests. Later changes only correct dashboard record labels, experiment-scoped selection, and line rendering; the model-training code and saved predictions are unchanged. Earlier `nasa-study` output is explicitly superseded.
 
-See [NASA card](../dataset_cards/nasa_milling.md), [PHM card](../dataset_cards/phm2010_milling.md), [scientific review](../verification/scientific-review.md), and [verification logs](../verification/pytest.txt). The complete local artifacts are under `artifacts/experiments/nasa-final/`.
+See the [NASA card](../dataset_cards/nasa_milling.md), [PHM card](../dataset_cards/phm2010_milling.md), and [technical decisions](../technical_decisions.md). The complete local artifacts are under `artifacts/experiments/nasa-final/`.

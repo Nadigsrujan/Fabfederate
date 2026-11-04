@@ -601,7 +601,7 @@ fabfederate-cnc/
     utils/                      # IO and provenance
   frontend/                     # React package, tooling, src/, tests/
   tests/                        # Python correctness and regression tests
-  docs/                         # this report, dataset cards and verification evidence
+  docs/                         # this report, dataset cards, decisions and findings
   artifacts/experiments/        # generated studies, each with models/metrics/data/figures
   artifacts/inference/          # example features and inference output
 ```
