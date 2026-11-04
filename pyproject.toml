@@ -9,26 +9,28 @@ description = "Auditable offline federated CNC milling-wear research"
 requires-python = ">=3.11"
 dependencies = [
   "numpy>=1.26", "pandas>=2.2", "scipy>=1.13", "scikit-learn>=1.5",
-  "torch>=2.4", "flwr>=1.13,<2", "shap>=0.46", "streamlit>=1.40",
+  "torch>=2.4", "flwr>=1.13,<2", "shap>=0.46",
   "PyYAML>=6", "pyarrow>=17", "matplotlib>=3.9", "joblib>=1.4",
-  "websockets>=16.1.1,<17", "altair>=5,<7",
+  "websockets>=16.1.1,<17", "requests>=2.31",
+  "fastapi>=0.138,<0.139", "uvicorn>=0.49,<0.50",
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=8", "ruff>=0.8"]
+dev = ["pytest>=8", "ruff>=0.8", "httpx>=0.28"]
 spectral = ["PyWavelets>=1.7"]
 simulation = ["flwr[simulation]>=1.13,<2"]
-web = ["fastapi>=0.138,<0.139", "uvicorn>=0.49,<0.50"]
 
 [project.scripts]
 fabfederate = "fabfederate.cli:main"
 
-[tool.setuptools.packages.find]
-where = ["src"]
+[tool.setuptools]
+package-dir = {fabfederate = "src"}
+packages = [
+  "fabfederate", "fabfederate.api", "fabfederate.campus_cnc", "fabfederate.data", "fabfederate.evaluation", "fabfederate.explainability", "fabfederate.federated", "fabfederate.inference", "fabfederate.models", "fabfederate.pipelines", "fabfederate.utils"
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-pythonpath = ["src"]
 filterwarnings = ["error::RuntimeWarning:fabfederate.*"]
 
 [tool.ruff]

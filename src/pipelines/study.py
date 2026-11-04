@@ -83,7 +83,7 @@ def run_study(config: dict, explain: bool = True) -> Path:
         raise FileExistsError(f"Study already exists: {directory}; choose a new output directory")
     directory.mkdir(parents=True, exist_ok=True)
     manifest = {"status": "running", "started_at_utc": _now(), "config": config,
-                "executed_source": source_snapshot(Path(__file__).resolve().parents[3]),
+                "executed_source": source_snapshot(Path(__file__).resolve().parents[2]),
                 "source_sha256": file_hash(config["data_path"]),
                 "source_path": str(config["data_path"]), "runs": [], "infeasible": [],
                 "methodology": "Fixed case-heldout split and partition seeds; validation-only selection",
@@ -210,7 +210,7 @@ def run_study(config: dict, explain: bool = True) -> Path:
             write_json(directory / "attributions.json", attribution_rows)
             if stability:
                 pd.DataFrame(stability).to_csv(directory / "explanation_stability.csv", index=False)
-        current_source = source_snapshot(Path(__file__).resolve().parents[3])
+        current_source = source_snapshot(Path(__file__).resolve().parents[2])
         if current_source["sha256"] != manifest["executed_source"]["sha256"]:
             raise RuntimeError("Project source changed during execution; rerun with a stable implementation")
         manifest.update(status="complete", completed_at_utc=_now(), explanations_enabled=explain,

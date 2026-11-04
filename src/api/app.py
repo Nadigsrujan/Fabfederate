@@ -140,7 +140,7 @@ def _sample_metadata(row: pd.Series) -> dict:
 
 def create_app(experiments_root: Path | None = None) -> FastAPI:
     root = Path(experiments_root or os.environ.get('FABFEDERATE_EXPERIMENTS_DIR')
-                or Path(__file__).resolve().parents[3] / 'artifacts' / 'experiments').resolve()
+                or Path(__file__).resolve().parents[2] / 'artifacts' / 'experiments').resolve()
     application = FastAPI(title='FabFederate local research API')
 
     @application.exception_handler(RequestValidationError)

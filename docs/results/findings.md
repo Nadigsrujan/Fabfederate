@@ -1,6 +1,6 @@
 # Verified implementation and experiment evidence
 
-Completed offline public-data research implementation, 4 November 2026. This summary is generated from the saved real NASA study CSVs. The full automatically generated report is [report.md](report.md).
+Completed offline public-data research implementation, 4 November 2026. This summary is generated from the saved real NASA study CSVs. The full automatically generated report is [saved study report](../../artifacts/experiments/nasa-final/report.md).
 
 ## What was executed
 
@@ -99,4 +99,4 @@ The implementation is software-complete for the required offline study. Physical
 
 The exact training-source file digests match local Git commit `f4d8caa`, recorded in the completed study manifests. Later changes only correct dashboard record labels, experiment-scoped selection, and line rendering; the model-training code and saved predictions are unchanged. Earlier `nasa-study` output is explicitly superseded.
 
-See [NASA card](../dataset_cards/nasa_milling.md), [PHM card](../dataset_cards/phm2010_milling.md), [scientific review](../development/scientific-review.md), and [verification logs](../verification/pytest.txt). The complete local artifacts are under `experiments/nasa-final/`.
+See [NASA card](../dataset_cards/nasa_milling.md), [PHM card](../dataset_cards/phm2010_milling.md), [scientific review](../verification/scientific-review.md), and [verification logs](../verification/pytest.txt). The complete local artifacts are under `artifacts/experiments/nasa-final/`.

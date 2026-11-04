@@ -53,13 +53,13 @@ The revised architecture takes precedence regardless of the order in which the f
 | Main prediction task | Continuous measured flank-wear regression, preferably VB in its documented units. | S1, pp. 2, 6, 8 |
 | Primary FL model | Small PyTorch MLP on a consistent engineered feature vector. | S1, pp. 5, 8-9 |
 | FL comparison | FedAvg and FedProx in the full research scope. FedAvg is the first functioning milestone; FedProx follows. | S1, pp. 10, 15, 17; resolves optional treatment in S2/S3 |
-| Main UI | Local React workspace and FastAPI adapter; the original Streamlit explorer remains available under `dashboard/`. | Streamlit: S1, pp. 12-14; React/API: subsequent explicit user request |
+| Main UI | Single React workspace backed by the local FastAPI adapter. | PDF local-UI scope: S1, pp. 12-14; React/API and legacy UI removal: subsequent explicit user requests |
 | Test-set policy | Validation during model selection; final test after choices are frozen. | S1, p. 15 and S2, pp. 9, 12; resolves S1 p. 10's broader wording about periodic held-out evaluation |
 | Operator action | Human inspection or re-measurement support. | S1, p. 10 |
 
 ### 1.3 What currently exists
 
-At planning time the workspace contained only the three source PDFs and this report. The implementation now includes audited NASA acquisition, data preparation, all required baselines, Flower FedAvg/FedProx, five scenarios, three seeds, SHAP, the React/FastAPI workspace, an optional Streamlit explorer, locked dependencies, and verified research artifacts. All required offline tasks T01-T26 are complete. Fresh-process reproduction matches 4,905 saved predictions exactly. The later user-requested React/API extension and repository migration are covered by additional regression tests. Results and limitations are recorded in [scientific findings](results/findings.md). No campus recordings or approvals have been supplied.
+At planning time the workspace contained only the three source PDFs and this report. The implementation now includes audited NASA acquisition, data preparation, all required baselines, Flower FedAvg/FedProx, five scenarios, three seeds, SHAP, the React/FastAPI workspace, locked dependencies, and verified research artifacts. All required offline tasks T01-T26 are complete. Fresh-process reproduction matches 4,905 saved predictions exactly. The later user-requested React/API extension and repository migration are covered by additional regression tests. Results and limitations are recorded in [scientific findings](results/findings.md). No campus recordings or approvals have been supplied.
 
 ## 2. Project purpose, scope, and research questions
 
@@ -83,7 +83,7 @@ These are questions to test. FL improvement, operator acceptance, manufacturing 
 
 ### 2.3 Scope boundaries
 
-**Required for the complete offline study:** NASA audit; validated wear labels; grouped splits; engineered features; mean/median, Random Forest, centralized MLP and local MLP baselines; Flower FedAvg/FedProx simulation; feasible heterogeneity scenarios; repeated-seed evaluation; SHAP; Streamlit; versioned artifacts; reproducibility and correctness checks.
+**Required for the complete offline study:** NASA audit; validated wear labels; grouped splits; engineered features; mean/median, Random Forest, centralized MLP and local MLP baselines; Flower FedAvg/FedProx simulation; feasible heterogeneity scenarios; repeated-seed evaluation; SHAP; React/FastAPI interface; versioned artifacts; reproducibility and correctness checks.
 
 **Conditional extensions:** PHM 2010, FFT/wavelet features, a waveform 1D-CNN, wear-stage classification, and a supervised campus pilot. Each needs its own feasibility evidence. [S1, pp. 6-17]
 
@@ -191,7 +191,6 @@ The stack below follows the revised source recommendations. Versions must be sel
 | Plots | Matplotlib; seaborn or Plotly as useful | Research figures and dashboard charts. | Choose only what each view needs. |
 | Frontend | React, TypeScript, Vite, Tailwind, shadcn conventions, Motion, Lucide | Local saved-study exploration and model inference. | Implemented subsequent user-requested interface. |
 | Backend API | FastAPI, Pydantic, Uvicorn | Read completed studies and validate prediction inputs. | Local loopback adapter, no training/control endpoints. |
-| Research explorer | Streamlit | Data exploration, comparisons, inference, and explanations. | Original offline demonstration, retained under `dashboard/`. |
 | Experiment tracking | JSON/JSONL + CSV/Parquet + Git | Configurations, seeds, metrics, versions, and provenance. | Lightweight initial choice supported by S1. |
 | Checkpoints | PyTorch checkpoint or safetensors; JSON schema | Save model parameters and compatible input metadata. | Select one model format; load trusted project artifacts. |
 | Tests/style | pytest, Ruff | Correctness checks and maintainable Python. | Required development tools. |
@@ -227,8 +226,6 @@ flowchart TD
     BASE --> EVAL
     EVAL --> ART["Metrics, predictions, plots and model cards"]
     CKPT --> INF["Validated offline inference and SHAP"]
-    ART --> UI["Optional Streamlit explorer"]
-    INF --> UI
     ART --> API["Local FastAPI adapter"]
     INF --> API
     API --> WEB["React research workspace"]
@@ -250,7 +247,6 @@ The flow is: audited recordings -> frozen independent-group splits -> features a
 | Flower coordinator | Client updates and run configuration | Validate compatibility, aggregate, version checkpoints, log rounds and payload sizes. | Global model and round history. |
 | Evaluator | Frozen model, designated split, metadata | Compare methods on the same held-out groups; summarize client/run errors and costs. | Reproducible metric/prediction tables and plots. |
 | Explainer/inference | Validated input and selected model bundle | Apply matching preprocessing, predict, compute model-specific attributions. | Wear estimate, quality status, explanation, provenance. |
-| Streamlit app | Versioned local artifacts or approved input files | Present dataset, experiments, client differences, convergence, and inference. | Read-only research and operator views. |
 | Local API and React | Trusted completed study artifacts and validated feature rows | Expose saved evidence and compute selected-model estimates. | Local research UI; no training or control endpoints. |
 | Future campus adapter | Approved recorded exports and measurements | Check signal/target compatibility and domain shift. | Campus validation records; no control commands. |
 
@@ -515,7 +511,7 @@ An inspection prompt needs an explicit configured rule with provenance. It may b
 
 If a validated prediction-interval method has not been implemented, display its absence and known limitations. SHAP values, repeated-seed spread, and low training loss are not substitutes for calibrated predictive uncertainty.
 
-### 11.3 Streamlit screens
+### 11.3 Research interface screens
 
 | Screen | Required content |
 |---|---|
@@ -531,7 +527,7 @@ A proposed upload flow accepts an explicitly documented feature CSV or a support
 
 The subsequent explicit user request adds a React/TypeScript/Tailwind workspace under `frontend/`, with Overview, Experiments, Clients, Dataset and Wear Estimate pages. Shared components live in `frontend/src/components/ui/`; styles are in `frontend/src/styles/globals.css`. The reusable animated header is named `research-background.tsx` and renders project content rather than a generic demo.
 
-The backend is `src/fabfederate/api/app.py`. Its local endpoints provide health, complete experiment discovery/details, bounded held-out sample lists, selected-model prediction with optional SHAP, and report download. CSV inputs require the exact ordered feature schema. The API loads trusted existing bundles and uses training-only SHAP references. It accepts no arbitrary filesystem paths or model uploads. Start both processes with `make api` and `make frontend`; this interface extension does not change the revised PDF's offline research, dataset or campus-access boundaries.
+The backend is `src/api/app.py`. Its local endpoints provide health, complete experiment discovery/details, bounded held-out sample lists, selected-model prediction with optional SHAP, and report download. CSV inputs require the exact ordered feature schema. The API loads trusted existing bundles and uses training-only SHAP references. It accepts no arbitrary filesystem paths or model uploads. Start both processes with `make api` and `make frontend`; this interface extension does not change the revised PDF's offline research, dataset or campus-access boundaries.
 
 ## 12. End-to-end project workflows
 
@@ -585,7 +581,6 @@ The supplied modular-monorepo recommendation informed the user-requested reorgan
 fabfederate-cnc/
   README.md
   pyproject.toml
-  requirements.txt              # delegates to requirements.lock
   requirements.lock
   Makefile
   .env.example
@@ -593,7 +588,7 @@ fabfederate-cnc/
   data/raw/                     # unchanged original NASA files and source manifest
   data/interim/                 # generated audits
   data/processed/nasa/           # features and split/client manifests
-  src/fabfederate/
+  src/
     api/                        # local Python HTTP backend
     data/                       # loaders, features, grouped splitting and partitioning
     models/                     # centralized/local training and compatible model bundles
@@ -605,8 +600,6 @@ fabfederate-cnc/
     pipelines/                  # complete training/evaluation study
     utils/                      # IO and provenance
   frontend/                     # React package, tooling, src/, tests/
-  dashboard/                    # optional Streamlit app and configuration
-  scripts/                      # named CLI wrappers
   tests/                        # Python correctness and regression tests
   docs/                         # this report, dataset cards and verification evidence
   artifacts/experiments/        # generated studies, each with models/metrics/data/figures
@@ -627,7 +620,7 @@ Saved studies moved together, preserving every bundle and historical manifest. T
 | Evaluation | Validation/checkpoint selection, metrics, final test protocol, repetitions, group aggregation, robustness and timing settings. |
 | Explanation/UI | Selected model, reference/background set, explainer settings, sample budget, optional inspection-rule provenance. |
 
-Scripts should read configuration, validate it, and write a run ID plus immutable configuration snapshot. Actual CLI commands belong in the README after those scripts exist; no unimplemented command is presented here as runnable.
+The Python CLI reads validated configuration and records an immutable configuration snapshot. Makefile targets call that CLI directly; redundant wrapper scripts have been removed.
 
 ## 14. Verification and quality gates
 
@@ -735,7 +728,7 @@ Task status reflects the verified implementation. T01-T26 and the supported FFT 
 - [x] **T20 - Implement model-specific SHAP.** Select training-derived reference data, log settings, validate feature dimensions and reconstruction. **Done when:** the shown explanation belongs to the same versioned model as its prediction. **Depends:** T11, T15; final examples use T19.
 - [x] **T21 - Measure explanation stability.** Compare recorded seeds, held-out examples, clients, and justified perturbations. **Done when:** a reproducible stability table/plot and correlation/causality limitations are saved. **Depends:** T19, T20.
 - [x] **T22 - Build validated offline inference.** Load model/schema/preprocessing together and implement input rejection plus optional documented inspection rule. **Done when:** save/reload parity, correct units, missing-column, and schema-mismatch checks pass. **Depends:** T19, T20.
-- [x] **T23 - Integrate Streamlit screens.** Add data explorer, experiment comparison, heterogeneity, convergence/cost, and wear estimate views. **Done when:** an approved example file completes the inference/explanation flow and the UI shows versions and limitations. **Depends:** T21, T22.
+- [x] **T23 - Integrate research interface screens.** Add data explorer, experiment comparison, heterogeneity, convergence/cost, and wear estimate views. **Done when:** an approved example file completes the inference/explanation flow and the UI shows versions and limitations. **Depends:** T21, T22.
 
 **P5 checkpoint:** No universal threshold, causal explanation, unsupported uncertainty claim, or machine-control action appears in the demonstrator.
 
@@ -782,7 +775,7 @@ The six-month sequence in S2 can be retained as an **illustrative schedule**, su
 5. Flower FedAvg and FedProx runs with validated aggregation/objectives, seeds, round logs, and cost accounting.
 6. Final held-out predictions, MAE/RMSE in documented units, supported client/run analyses, uncertainty, and failure cases.
 7. Model-specific SHAP examples plus stability results.
-8. Local React/FastAPI workspace, optional Streamlit research explorer, and validated offline prediction demonstration.
+8. Local React/FastAPI workspace, and validated offline prediction demonstration.
 9. Final scientific report, model cards, privacy/validity limitations, and reproduction evidence.
 10. Conditional separate outputs for PHM, campus validation, or other approved extensions.
 

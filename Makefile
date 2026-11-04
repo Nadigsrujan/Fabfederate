@@ -7,13 +7,12 @@ STUDY_OUTPUT ?= artifacts/experiments/new-study
 MODEL ?= $(STUDY)/models/fedavg
 INPUT ?= artifacts/inference/example_features.csv
 
-.PHONY: help install frontend-install api frontend dashboard download audit prepare study report predict explain test check
+.PHONY: help install frontend-install api frontend download audit prepare study report predict explain test check
 
 help:
 	@printf '%s\n' 'FabFederate-CNC commands (run from the repository root):' \
 	  '  make api               Start the local Python backend on :8000' \
 	  '  make frontend          Start the React website on :5173' \
-	  '  make dashboard         Open the optional Streamlit research explorer on :8501' \
 	  '  make download          Retrieve the NASA source dataset' \
 	  '  make audit             Audit raw NASA recordings' \
 	  '  make prepare           Generate features and split/client manifests' \
@@ -25,7 +24,7 @@ help:
 	  '  make check             Run Python lint and the TypeScript production build'
 
 install:
-	$(PYTHON) -m pip install -r requirements.txt
+	$(PYTHON) -m pip install -r requirements.lock
 	$(PYTHON) -m pip install --no-build-isolation --no-deps -e .
 
 frontend-install:
@@ -36,9 +35,6 @@ api:
 
 frontend:
 	npm --prefix frontend run dev
-
-dashboard:
-	cd dashboard && $(abspath $(PYTHON)) -m streamlit run app.py --server.address 127.0.0.1 --server.port 8501
 
 download:
 	$(PYTHON) -m fabfederate download
@@ -66,5 +62,5 @@ test:
 	npm --prefix frontend test
 
 check:
-	$(PYTHON) -m ruff check src tests dashboard scripts
+	$(PYTHON) -m ruff check src tests
 	npm --prefix frontend run build

@@ -40,7 +40,7 @@ A bounded animated header introduces the workspace without obscuring the researc
 
 ## Engineering decisions
 
-React/Vite/TypeScript are contained in `frontend/`, with `src/pages/` for application views, `src/components/ui/` for reusable components, `src/lib/utils.ts` for `cn`, and `src/styles/globals.css` for Tailwind and design tokens. The `@/` alias resolves to `frontend/src/` in Vite, TypeScript and Vitest. `frontend/components.json` declares these paths for shadcn. Python endpoints live under `src/fabfederate/api/`.
+React/Vite/TypeScript are contained in `frontend/`, with `src/pages/` for application views, `src/components/ui/` for reusable components, `src/lib/utils.ts` for `cn`, and `src/styles/globals.css` for Tailwind and design tokens. The `@/` alias resolves to `frontend/src/` in Vite, TypeScript and Vitest. `frontend/components.json` declares these paths for shadcn. Python endpoints live under `src/api/`.
 
 Canvas behavior: CSS-space coordinates at high DPR, container resizing, children rendering, animation-frame cleanup, reduced-motion support and hidden/offscreen pausing. No context provider or global store is required. App state is local plus the URL hash; API requests are cancelled when experiments change.
 
