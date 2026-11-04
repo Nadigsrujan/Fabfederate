@@ -1,0 +1,13 @@
+# Genuine-data smoke run, not the full experimental budget.
+output_dir: experiments/nasa-smoke
+window_size: 2048
+stride: 2048
+seeds: [11]
+scenarios: [iid]
+epochs: 8
+rounds: 3
+local_epochs: 1
+rf_trees: 20
+mu_grid: [0.0, 0.01]
+explanation_samples: 1
+max_background: 8

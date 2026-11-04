@@ -1,0 +1,9 @@
+{
+  "dataset_id": "campus_cnc_pilot",
+  "approval_record": "supervisor_approval.pdf",
+  "read_only": false,
+  "preprocessing_parity_confirmed": false,
+  "feature_csv": "recorded_features.csv",
+  "wear_unit": "mm",
+  "sampling_hz": 250.0
+}

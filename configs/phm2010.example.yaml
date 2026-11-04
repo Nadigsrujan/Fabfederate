@@ -1,0 +1,10 @@
+# Supply your own audited local manifest; see docs/dataset_cards/phm2010_milling.md.
+dataset: phm2010
+data_path: data/raw/phm2010/manifest.json
+output_dir: data/processed/phm2010-audit
+phm_edge_reduction: max
+wear_unit: um
+sampling_hz: 50000
+# Three released labeled cutters cannot support the NASA three-client protocol
+# plus distinct validation and test cutters. Use audit first; redesign validation
+# explicitly before claiming a PHM federated benchmark.

@@ -1,0 +1,16 @@
+# NASA Readme: VB in mm, processed sensor sampling at 250 Hz.
+data_path: data/raw/nasa/3. Milling/mill.mat
+output_dir: experiments/nasa-study
+window_size: 1024
+stride: 1024
+sampling_hz: 250.0
+wear_unit: mm
+split_seed: 42
+partition_seed: 42
+seeds: [11, 22, 33]
+scenarios: [iid, condition, quantity, label, few_shot]
+num_clients: 3
+rounds: 30
+local_epochs: 3
+epochs: 90
+mu_grid: [0.0, 0.001, 0.01, 0.1]
