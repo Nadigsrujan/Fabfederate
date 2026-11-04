@@ -1,0 +1,10 @@
+experiment,method,mae_mm,rmse_mm,model_payload_bytes
+"time-only,30rounds,3localepochs",centralized_mlp,0.17362022159241583,0.20081651810755188,
+"time-only,30rounds,3localepochs",fedavg,0.1769752905249222,0.20616711368458726,3364560.0
+"time-only,30rounds,3localepochs",fedprox,0.17670312868764035,0.20573292814641275,3364560.0
+"time+FFT,30rounds,3localepochs",centralized_mlp,0.11382922371446526,0.1517564082859967,
+"time+FFT,30rounds,3localepochs",fedavg,0.12286385045997028,0.16101942513970705,4194000.0
+"time+FFT,30rounds,3localepochs",fedprox,0.12286385045997028,0.16101942513970705,4194000.0
+"time-only,15rounds,1localepoch",centralized_mlp,0.17362022159241583,0.20081651810755188,
+"time-only,15rounds,1localepoch",fedavg,0.17335885128163994,0.20817565528205567,1682280.0
+"time-only,15rounds,1localepoch",fedprox,0.17335885128163994,0.20817565528205567,1682280.0

@@ -21,9 +21,20 @@ Spec: ../../implementation.md. The user authorized implementing the complete pla
 
 ## Work packages
 
-- [ ] Foundation/configuration/CLI/integration and real-data acquisition (root).
-- [ ] Dataset adapters, audit, features, group splits, client scenarios, tests (data agent).
-- [ ] Models, model bundles, FedAvg/FedProx, Flower integration, tests (model agent).
-- [ ] Evaluation, SHAP, Streamlit dashboard, tests (interface agent).
-- [ ] Real NASA end-to-end experiment, repeated seeds/scenarios, reports and verification.
-- [ ] Independent review, corrections, final evidence and task-status reconciliation.
+- [x] Foundation/configuration/CLI/integration and real-data acquisition (root).
+- [x] Dataset adapters, audit, features, group splits, client scenarios, tests (data agent).
+- [x] Models, model bundles, FedAvg/FedProx, Flower integration, tests (model agent).
+- [x] Evaluation, SHAP, Streamlit dashboard, tests (interface agent).
+- [x] Real NASA end-to-end experiment, repeated seeds/scenarios, reports and verification.
+- [x] Independent review, corrections, final evidence and task-status reconciliation.
+
+## Completion evidence
+
+- Required offline tasks T01-T26 complete; conditional campus tasks T27-T29 remain open.
+- Optional PHM adapter and FFT extension implemented; PHM experimental execution, waveform CNN and wavelets remain conditional.
+- NASA final study:15 runs,5 scenarios,3 seeds,270 validation/test metric rows. Source digests verified against local commit f4d8caa.
+- Efficiency and FFT feature studies complete; fresh-process IID seed11 reproduction matches4905 saved predictions exactly.
+- Independent scientific review findings resolved: controlled limited-label evaluation, source-window plot identity, executed-code provenance.
+- Final browser review caught and corrected experiment-scoped model widget state, unique run/window labels and explicit noninteractive chart rendering.
+- Full suite88 passed; Ruff and dependency checks pass. Final browser logs have no new errors/warnings; model inference and SHAP reconstruction verified.
+- Local Git repository initialized on feature/offline-implementation. Source PDFs retained in place; no remote publish or machine control performed.

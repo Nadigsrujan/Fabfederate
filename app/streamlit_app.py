@@ -64,6 +64,23 @@ def _bar_chart(frame, category, measures, *, x_title, y_title, colors=None):
     return chart.encode(color=alt.value(palette[0]))
 
 
+def _line_chart(frame, measure, *, y_title, color='#087f8c'):
+    values = frame[['round', measure]].copy()
+    if values.empty or not np.isfinite(values.to_numpy(dtype=float)).all():
+        raise ValueError('Round charts require nonempty finite recorded values')
+    return alt.Chart(values).mark_line(color=color).encode(
+        x=alt.X('round:Q', title='Communication round'),
+        y=alt.Y(f'{measure}:Q', title=y_title, scale=alt.Scale(zero=False)),
+        tooltip=['round:Q', alt.Tooltip(f'{measure}:Q', title=y_title)],
+    )
+
+
+def _record_label(frame, value):
+    row = frame.loc[value]
+    return (f'{row.get("run_id", f"row {value}")} · window {row.get("window_id", value)} · '
+            f'{row.get("group_id", "group unavailable")} · {row["split"]}')
+
+
 def _filters(frame, columns, prefix):
     selected = frame.copy()
     for column in columns:
@@ -224,12 +241,12 @@ def convergence_cost(directory):
     columns[2].metric('Model downloads', f'{download / 2**20:.3f} MiB' if download is not None else 'Unavailable')
     st.subheader('Validation wear error')
     if 'validation_mae' in rounds:
-        st.line_chart(rounds, x='round', y='validation_mae', color='#087f8c',
-                      x_label='Round', y_label='Validation MAE (source units)')
+        st.altair_chart(_line_chart(rounds, 'validation_mae',
+                                   y_title='Validation MAE (source units)'), width='stretch')
     if 'train_loss' in rounds:
         st.subheader('Local training objective')
-        st.line_chart(rounds, x='round', y='train_loss', color='#193c55',
-                      x_label='Round', y_label='Recorded training loss')
+        st.altair_chart(_line_chart(rounds, 'train_loss', y_title='Recorded training loss',
+                                   color='#193c55'), width='stretch')
     with st.expander('Round records and cost definition'):
         _table(rounds)
         st.write('Bytes describe recorded model payloads. They exclude network protocol overhead, '
@@ -278,7 +295,8 @@ def wear_estimate(directory):
                'then return here to estimate wear.')
         return
     from fabfederate.models.bundle import load_bundle
-    model_path = st.selectbox('Saved model', models, format_func=lambda path: path.name)
+    model_path = st.selectbox('Saved model', models, format_func=lambda path: path.name,
+                              key=f'saved_model_{directory.resolve()}')
     bundle = load_bundle(model_path)
     st.caption(f'Model: {bundle.model_kind} · Output unit: {bundle.wear_unit} · '
                f'{len(bundle.feature_names)} ordered features · {model_path.relative_to(directory)}')
@@ -313,9 +331,8 @@ def wear_estimate(directory):
         heldout = frame.loc[frame['split'].isin(['validation', 'test'])]
         if len(heldout):
             index = st.selectbox('Held-out record', heldout.index.tolist(),
-                                 format_func=lambda value: f'{heldout.loc[value].get("window_id", value)} · '
-                                 f'{heldout.loc[value].get("group_id", "group unavailable")} · '
-                                 f'{heldout.loc[value]["split"]}')
+                                 format_func=lambda value: _record_label(heldout, value),
+                                 key=f'heldout_record_{directory.resolve()}')
             sample = heldout.loc[[index], bundle.feature_names].reset_index(drop=True)
             measured = heldout.loc[index].get('wear_target')
         else:

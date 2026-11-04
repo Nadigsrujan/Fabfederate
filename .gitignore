@@ -13,3 +13,6 @@ experiments/
 outputs/
 .env
 !.env.example
+
+# User-provided source reports remain local inputs.
+/*.pdf

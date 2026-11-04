@@ -1,0 +1,2 @@
+Fresh-process reproduction of IID seed11: 4905 prediction rows identical, max absolute difference0.0.
+Same locked environment; not a second independent dataset.

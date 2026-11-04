@@ -35,3 +35,7 @@ Report overview predictions preserve every recorded sample/method provenance col
 ## Browser correction: grouped native-rendered bars
 
 All four bar-chart locations now use explicit noninteractive Altair specifications rendered through Streamlit. Wear minimum/median/maximum and method MAE/RMSE use `xOffset` grouping and quantitative `stack=None`; training client counts and SHAP use single bars without offsets. No scale-bound selection parameters or `yOffset` encodings are generated. This preserves original statistics: a maximum1.53mm remains1.53mm rather than an additive stack. Official [Altair grouped bars](https://altair-viz.github.io/user_guide/marks/bar.html) guidance was consulted. The regression specification test was observed failing before implementation. All5 dashboard tests now pass without the previous upstream built-in-bar warnings; scoped Ruff passes. Root owns live-browser confirmation before the final source-frozen study.
+
+## Final integrated browser corrections
+
+Root replaced native line charts with explicit finite noninteractive Altair encodings, added unique source run/window labels, and scoped model/record widget keys to each experiment directory. A new AppTest first reproduced a stale model path after switching folders and now verifies the new experiment's prediction and measured value. Final full suite88 passed. Browser inference/SHAP and convergence rendered with no new console warnings/errors. Training results remain from the unchanged core implementation at commit f4d8caa; these later changes affect UI behavior only.

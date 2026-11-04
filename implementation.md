@@ -3,7 +3,7 @@
 **Project:** Heterogeneity-aware, explainable federated learning for CNC milling-tool-wear estimation  
 **Institution/context:** RV College of Engineering; Experiential Learning; SDG 9  
 **Document date:** 4 November 2026  
-**Status:** Source-based implementation specification. Training, measured results, dataset acquisition, and campus deployment are not established by the supplied files.  
+**Status:** Required offline implementation completed and verified. Real NASA experiments, model artifacts, and results now exist; physical campus validation remains conditional. See [implementation evidence](docs/results/README.md) and [run instructions](README.md).  
 **Primary architecture:** Revised campus/public-dataset architecture in [S1], especially Figure 1 on page 4 and module responsibilities on page 5.
 
 ## Contents
@@ -59,7 +59,7 @@ The revised architecture takes precedence regardless of the order in which the f
 
 ### 1.3 What currently exists
 
-The supplied workspace contains the three source PDFs. No dataset archive, source implementation, dependency lockfile, trained checkpoint, recorded campus sample, or experimental metric was supplied. The project tasks below therefore remain unchecked. Completing this report does not imply that the system has been built.
+At planning time the workspace contained only the three source PDFs and this report. The implementation now includes audited NASA acquisition, data preparation, all required baselines, Flower FedAvg/FedProx, five scenarios, three seeds, SHAP, Streamlit, locked dependencies, and verified research artifacts. All required offline tasks T01-T26 are complete. The final suite passes 88 tests; fresh-process reproduction matches 4,905 saved predictions exactly. Results and limitations are recorded in [docs/results/README.md](docs/results/README.md). No campus recordings or approvals have been supplied.
 
 ## 2. Project purpose, scope, and research questions
 
@@ -569,7 +569,7 @@ A second physical learning site and remote FL transport are unnecessary for this
 
 ## 13. Proposed repository and configuration
 
-This layout adapts S1, p. 13 into a consistent Python package. It is a plan; these files have not been created by this report.
+This layout adapts S1, p. 13 into the implemented Python package. The exact checked-in modules and working commands are documented in README.md; requirements.lock is the tested dependency lockfile. Optional modules remain conditional as identified below.
 
 ```text
 fabfederate-cnc/
@@ -674,16 +674,16 @@ Source basis: S1, pp. 6-10, 15-18; S2, pp. 14-16. No target MAE, guaranteed FL i
 
 ## 16. Project TODO list
 
-All items are planned project work. Each task below includes its completion evidence; dependencies refer to task IDs. Suggested owners are roles, not assignments to named team members. P0-P6 follow the revised source phases; P7 is optional. [S1, p. 17]
+Task status reflects the verified implementation. T01-T26 and the supported FFT ablation X02 are complete; PHM experimental execution, CNN/wavelet additions, remote/product extensions, and campus work remain conditional. Each task below includes its completion evidence; dependencies refer to task IDs. Suggested owners are roles, not assignments to named team members. P0-P6 follow the revised source phases; P7 is optional. [S1, p. 17]
 
 ### P0: Source audit and reproducible foundation
 
 **Owners:** Project/research lead and data lead.
 
-- [ ] **T01 - Freeze project protocol.** Record the revised scope, RQs, target definition policy, required versus optional studies, and source hierarchy. **Done when:** the protocol identifies the held-out evaluation and no longer depends on Peenya or unavailable hardware. **Depends:** none.
-- [ ] **T02 - Bootstrap the repository/environment.** Create package layout, dependency lock, basic configuration, pytest/Ruff setup, Git exclusions, and README instructions. **Done when:** a clean environment imports the chosen stack and runs a small smoke check. **Depends:** T01.
-- [ ] **T03 - Acquire NASA source data.** Record authoritative URL/terms/date, retain archive, and compute file hashes. **Done when:** original files and a retrieval manifest are available locally without unauthorized redistribution. **Depends:** T01.
-- [ ] **T04 - Complete dataset and label audit.** Inventory channels/groups/units, inspect example signals and measured-label alignment, document exclusions and independent counts. **Done when:** a dataset card and checked examples support the proposed supervised target and grouping. **Depends:** T03.
+- [x] **T01 - Freeze project protocol.** Record the revised scope, RQs, target definition policy, required versus optional studies, and source hierarchy. **Done when:** the protocol identifies the held-out evaluation and no longer depends on Peenya or unavailable hardware. **Depends:** none.
+- [x] **T02 - Bootstrap the repository/environment.** Create package layout, dependency lock, basic configuration, pytest/Ruff setup, Git exclusions, and README instructions. **Done when:** a clean environment imports the chosen stack and runs a small smoke check. **Depends:** T01.
+- [x] **T03 - Acquire NASA source data.** Record authoritative URL/terms/date, retain archive, and compute file hashes. **Done when:** original files and a retrieval manifest are available locally without unauthorized redistribution. **Depends:** T01.
+- [x] **T04 - Complete dataset and label audit.** Inventory channels/groups/units, inspect example signals and measured-label alignment, document exclusions and independent counts. **Done when:** a dataset card and checked examples support the proposed supervised target and grouping. **Depends:** T03.
 
 **P0 checkpoint:** Do not implement the final adapter from guessed fields. Missing labels, insufficient groups, or unsupported target semantics must be resolved or explicitly re-scoped first.
 
@@ -691,11 +691,11 @@ All items are planned project work. Each task below includes its completion evid
 
 **Owner:** Data/signal lead.
 
-- [ ] **T05 - Implement source adapter and normalized schema.** Preserve provenance and nullable source fields. **Done when:** safe fixtures and audited real examples decode consistently, invalid records are reported, and target units are preserved. **Depends:** T02, T04.
-- [ ] **T06 - Freeze train/validation/test groups.** Define independent-unit hierarchy and save disjoint manifests. **Done when:** automated overlap checks pass and every eligible group has one split assignment. **Depends:** T05.
-- [ ] **T07 - Implement windowing and quality rules.** Configure boundaries, overlap, finite-sample checks, and label mapping. **Done when:** windows cannot cross run/split boundaries and each accepted label is traceable. **Depends:** T06.
-- [ ] **T08 - Implement primary time-domain features.** Save definitions, order, units, and training-only imputer/scaler. **Done when:** known-signal checks pass and feature tables plus preprocessing bundle can be rebuilt from configuration. **Depends:** T07.
-- [ ] **T09 - Create client manifests and scenario feasibility report.** Start with three clients; construct only supported IID-ish/non-IID cases. **Done when:** IDs, counts, distributions, seeds, and infeasible scenarios are saved and disjointness checks pass. **Depends:** T06, T08.
+- [x] **T05 - Implement source adapter and normalized schema.** Preserve provenance and nullable source fields. **Done when:** safe fixtures and audited real examples decode consistently, invalid records are reported, and target units are preserved. **Depends:** T02, T04.
+- [x] **T06 - Freeze train/validation/test groups.** Define independent-unit hierarchy and save disjoint manifests. **Done when:** automated overlap checks pass and every eligible group has one split assignment. **Depends:** T05.
+- [x] **T07 - Implement windowing and quality rules.** Configure boundaries, overlap, finite-sample checks, and label mapping. **Done when:** windows cannot cross run/split boundaries and each accepted label is traceable. **Depends:** T06.
+- [x] **T08 - Implement primary time-domain features.** Save definitions, order, units, and training-only imputer/scaler. **Done when:** known-signal checks pass and feature tables plus preprocessing bundle can be rebuilt from configuration. **Depends:** T07.
+- [x] **T09 - Create client manifests and scenario feasibility report.** Start with three clients; construct only supported IID-ish/non-IID cases. **Done when:** IDs, counts, distributions, seeds, and infeasible scenarios are saved and disjointness checks pass. **Depends:** T06, T08.
 
 **P1 checkpoint:** Feature/label provenance, independent-group counts, and train-only transformations are verified before interpreting any model metric.
 
@@ -703,9 +703,9 @@ All items are planned project work. Each task below includes its completion evid
 
 **Owner:** ML lead; evaluation lead reviews outputs.
 
-- [ ] **T10 - Train trivial and Random Forest baselines.** Use allowed training data and validation selection. **Done when:** artifacts include original-unit validation errors, group counts, and saved prediction/configuration records. **Depends:** T08.
-- [ ] **T11 - Implement centralized MLP.** Use shared feature coordinates and declared optimizer/loss/budget. **Done when:** the model trains, saves/reloads, and reproduces validation predictions within tolerance. **Depends:** T08, T10.
-- [ ] **T12 - Train local-only MLPs.** Train one model per client under the recorded data budgets. **Done when:** each model sees only its training subset and supported pooled/client-domain validation comparisons are reproducible. **Depends:** T09, T11.
+- [x] **T10 - Train trivial and Random Forest baselines.** Use allowed training data and validation selection. **Done when:** artifacts include original-unit validation errors, group counts, and saved prediction/configuration records. **Depends:** T08.
+- [x] **T11 - Implement centralized MLP.** Use shared feature coordinates and declared optimizer/loss/budget. **Done when:** the model trains, saves/reloads, and reproduces validation predictions within tolerance. **Depends:** T08, T10.
+- [x] **T12 - Train local-only MLPs.** Train one model per client under the recorded data budgets. **Done when:** each model sees only its training subset and supported pooled/client-domain validation comparisons are reproducible. **Depends:** T09, T11.
 
 **P2 checkpoint:** Baselines use the same frozen split/schema. Investigate implausibly low error or poor sanity-baseline behavior before moving to FL; keep final test data untouched.
 
@@ -713,9 +713,9 @@ All items are planned project work. Each task below includes its completion evid
 
 **Owner:** ML/FL lead.
 
-- [ ] **T13 - Build Flower client/coordinator integration.** Exchange versioned compatible parameters, training counts, and scalar metadata. **Done when:** three logical clients finish a small round sequence on one computer and save checkpoints/logs. **Depends:** T09, T11.
-- [ ] **T14 - Verify FedAvg and training isolation.** Add known-vector aggregation, count/version validation, and payload checks. **Done when:** exact weighted aggregation is demonstrated and coordinator training payloads contain no feature/label tables or raw signals. **Depends:** T13.
-- [ ] **T15 - Run the initial matched FedAvg study.** Record configuration, training/validation curves, time, bytes, failures, and checkpoint selection. **Done when:** local/central/FedAvg validation comparisons can be reproduced from saved artifacts. **Depends:** T12, T14.
+- [x] **T13 - Build Flower client/coordinator integration.** Exchange versioned compatible parameters, training counts, and scalar metadata. **Done when:** three logical clients finish a small round sequence on one computer and save checkpoints/logs. **Depends:** T09, T11.
+- [x] **T14 - Verify FedAvg and training isolation.** Add known-vector aggregation, count/version validation, and payload checks. **Done when:** exact weighted aggregation is demonstrated and coordinator training payloads contain no feature/label tables or raw signals. **Depends:** T13.
+- [x] **T15 - Run the initial matched FedAvg study.** Record configuration, training/validation curves, time, bytes, failures, and checkpoint selection. **Done when:** local/central/FedAvg validation comparisons can be reproduced from saved artifacts. **Depends:** T12, T14.
 
 **P3 checkpoint:** FedAvg must work and be auditable before expanding the algorithm or experiment grid.
 
@@ -723,10 +723,10 @@ All items are planned project work. Each task below includes its completion evid
 
 **Owners:** ML/FL and evaluation leads.
 
-- [ ] **T16 - Implement and verify FedProx.** Use fixed incoming weights in the proximal term and keep other local-training settings matched. **Done when:** zero-at-reference, positive-after-drift, and `mu=0` checks pass; no score-based client-selection substitution exists. **Depends:** T14.
-- [ ] **T17 - Tune and run feasible heterogeneity studies.** Evaluate the declared `mu` grid, few-shot/skew scenarios, and 3-5 seeds when feasible. **Done when:** each run has a complete manifest and selection uses validation only. **Depends:** T15, T16.
-- [ ] **T18 - Evaluate robustness and efficiency.** Test documented noise/missingness, round/local-epoch budgets, and supported client counts. **Done when:** rejection/degradation behavior, actual resource use, and payload accounting are reported. **Depends:** T17.
-- [ ] **T19 - Freeze choices and evaluate final held-out groups.** Produce matched prediction/error tables, client/group summaries, seed variability, and negative findings. **Done when:** every reported result is generated from versioned test predictions and no test-guided tuning occurred. **Depends:** T17, T18.
+- [x] **T16 - Implement and verify FedProx.** Use fixed incoming weights in the proximal term and keep other local-training settings matched. **Done when:** zero-at-reference, positive-after-drift, and `mu=0` checks pass; no score-based client-selection substitution exists. **Depends:** T14.
+- [x] **T17 - Tune and run feasible heterogeneity studies.** Evaluate the declared `mu` grid, few-shot/skew scenarios, and 3-5 seeds when feasible. **Done when:** each run has a complete manifest and selection uses validation only. **Depends:** T15, T16.
+- [x] **T18 - Evaluate robustness and efficiency.** Test documented noise/missingness, round/local-epoch budgets, and supported client counts. **Done when:** rejection/degradation behavior, actual resource use, and payload accounting are reported. **Depends:** T17.
+- [x] **T19 - Freeze choices and evaluate final held-out groups.** Produce matched prediction/error tables, client/group summaries, seed variability, and negative findings. **Done when:** every reported result is generated from versioned test predictions and no test-guided tuning occurred. **Depends:** T17, T18.
 
 **P4 checkpoint:** Report uncertainty supported by independent groups. Unsupported scenarios and missing client-level test coverage are explicit limitations.
 
@@ -734,10 +734,10 @@ All items are planned project work. Each task below includes its completion evid
 
 **Owners:** Explainability lead and UI lead.
 
-- [ ] **T20 - Implement model-specific SHAP.** Select training-derived reference data, log settings, validate feature dimensions and reconstruction. **Done when:** the shown explanation belongs to the same versioned model as its prediction. **Depends:** T11, T15; final examples use T19.
-- [ ] **T21 - Measure explanation stability.** Compare recorded seeds, held-out examples, clients, and justified perturbations. **Done when:** a reproducible stability table/plot and correlation/causality limitations are saved. **Depends:** T19, T20.
-- [ ] **T22 - Build validated offline inference.** Load model/schema/preprocessing together and implement input rejection plus optional documented inspection rule. **Done when:** save/reload parity, correct units, missing-column, and schema-mismatch checks pass. **Depends:** T19, T20.
-- [ ] **T23 - Integrate Streamlit screens.** Add data explorer, experiment comparison, heterogeneity, convergence/cost, and wear estimate views. **Done when:** an approved example file completes the inference/explanation flow and the UI shows versions and limitations. **Depends:** T21, T22.
+- [x] **T20 - Implement model-specific SHAP.** Select training-derived reference data, log settings, validate feature dimensions and reconstruction. **Done when:** the shown explanation belongs to the same versioned model as its prediction. **Depends:** T11, T15; final examples use T19.
+- [x] **T21 - Measure explanation stability.** Compare recorded seeds, held-out examples, clients, and justified perturbations. **Done when:** a reproducible stability table/plot and correlation/causality limitations are saved. **Depends:** T19, T20.
+- [x] **T22 - Build validated offline inference.** Load model/schema/preprocessing together and implement input rejection plus optional documented inspection rule. **Done when:** save/reload parity, correct units, missing-column, and schema-mismatch checks pass. **Depends:** T19, T20.
+- [x] **T23 - Integrate Streamlit screens.** Add data explorer, experiment comparison, heterogeneity, convergence/cost, and wear estimate views. **Done when:** an approved example file completes the inference/explanation flow and the UI shows versions and limitations. **Depends:** T21, T22.
 
 **P5 checkpoint:** No universal threshold, causal explanation, unsupported uncertainty claim, or machine-control action appears in the demonstrator.
 
@@ -745,9 +745,9 @@ All items are planned project work. Each task below includes its completion evid
 
 **Owners:** Research/evaluation lead; whole-team review.
 
-- [ ] **T24 - Generate final tables and figures from saved runs.** Include measured-vs-predicted wear, error by group/client, convergence, cost, SHAP, and failure cases. **Done when:** outputs can be regenerated without hand-entered metrics. **Depends:** T19, T21.
-- [ ] **T25 - Complete project documentation.** Publish retrieval instructions, dataset/model cards, configuration/CLI guide, privacy limits, and optional campus protocol. **Done when:** instructions match the implemented files and no proposed feature is described as completed. **Depends:** T23, T24.
-- [ ] **T26 - Run final reproduction and demo review.** Rebuild a selected experiment in a fresh environment and verify dashboard input/output behavior. **Done when:** source hashes, configurations, checkpoints, metrics, and figures agree within documented tolerances and all required checks pass. **Depends:** T25.
+- [x] **T24 - Generate final tables and figures from saved runs.** Include measured-vs-predicted wear, error by group/client, convergence, cost, SHAP, and failure cases. **Done when:** outputs can be regenerated without hand-entered metrics. **Depends:** T19, T21.
+- [x] **T25 - Complete project documentation.** Publish retrieval instructions, dataset/model cards, configuration/CLI guide, privacy limits, and optional campus protocol. **Done when:** instructions match the implemented files and no proposed feature is described as completed. **Depends:** T23, T24.
+- [x] **T26 - Run final reproduction and demo review.** Rebuild a selected experiment in a fresh environment and verify dashboard input/output behavior. **Done when:** source hashes, configurations, checkpoints, metrics, and figures agree within documented tolerances and all required checks pass. **Depends:** T25.
 
 **P6 checkpoint:** The offline research project is complete only after the required methods, evidence, explanations, and reproducible demonstration meet the definition of done below.
 
@@ -762,7 +762,7 @@ All items are planned project work. Each task below includes its completion evid
 ### Optional research extensions
 
 - [ ] **X01 - PHM second benchmark:** admit audited data, define target/grouping, and rerun matched models with separate dataset results. **Depends:** T19 and verified access/labels. **Evidence:** dataset card, separate split/configuration, and reproducible results.
-- [ ] **X02 - Spectral/wavelet ablation:** add only supported transforms and quantify incremental accuracy/cost. **Depends:** T08, T19 and verified sampling. **Evidence:** matched feature-ablation table.
+- [x] **X02 - Spectral/wavelet ablation (FFT completed; wavelets remain optional):** add only supported transforms and quantify incremental accuracy/cost. **Depends:** T08, T19 and verified sampling. **Evidence:** matched feature-ablation table.
 - [ ] **X03 - Waveform 1D-CNN:** establish independent-data/compute feasibility before modeling. **Depends:** T19 and audited waveform support. **Evidence:** declared architecture, fair comparisons, and latency/error results.
 - [ ] **X04 - Product/API or remote federation:** define the actual multi-user/multi-site need before adding services, transport/security, or another interface stack. **Depends:** a separate approved scope decision. **Evidence:** interface/data-access contract and tests appropriate to that extension.
 
@@ -789,15 +789,15 @@ The six-month sequence in S2 can be retained as an **illustrative schedule**, su
 
 ### 17.2 Definition of done for the offline project
 
-- [ ] Source archives, labels, units, group counts, and exclusions are auditable.
-- [ ] Train/validation/test independent groups are disjoint and transformations respect the allowed data boundary.
-- [ ] Centralized, local-only, FedAvg, and FedProx comparisons are reproducible under the declared model/data/budget policy.
-- [ ] FedAvg weights by actual training counts; FedProx uses the correct local proximal objective.
-- [ ] All metrics and plots originate from saved versioned predictions/logs, with no invented gains.
-- [ ] SHAP explains the displayed model and its stability/causality limitations are recorded.
-- [ ] The dashboard validates inputs and exposes estimate, units, provenance, limitations, and human-review guidance.
-- [ ] A fresh documented run reproduces a selected experiment and its outputs.
-- [ ] Simulated-client validity, pooled public preprocessing, lack of formal privacy, and unavailable campus evidence are disclosed.
+- [x] Source archives, labels, units, group counts, and exclusions are auditable.
+- [x] Train/validation/test independent groups are disjoint and transformations respect the allowed data boundary.
+- [x] Centralized, local-only, FedAvg, and FedProx comparisons are reproducible under the declared model/data/budget policy.
+- [x] FedAvg weights by actual training counts; FedProx uses the correct local proximal objective.
+- [x] All metrics and plots originate from saved versioned predictions/logs, with no invented gains.
+- [x] SHAP explains the displayed model and its stability/causality limitations are recorded.
+- [x] The dashboard validates inputs and exposes estimate, units, provenance, limitations, and human-review guidance.
+- [x] A fresh documented run reproduces a selected experiment and its outputs.
+- [x] Simulated-client validity, pooled public preprocessing, lack of formal privacy, and unavailable campus evidence are disclosed.
 
 Campus availability is not part of this offline completion gate. A completed campus pilot requires the additional P7 evidence. [S1, pp. 15-19]
 
