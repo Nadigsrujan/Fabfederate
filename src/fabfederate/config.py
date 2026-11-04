@@ -10,7 +10,7 @@ DEFAULTS = {
     "dataset": "nasa",
     "phm_edge_reduction": None,
     "data_path": "data/raw/nasa/3. Milling/mill.mat",
-    "output_dir": "experiments/nasa-study",
+    "output_dir": "artifacts/experiments/nasa-study",
     "window_size": 1024,
     "stride": 1024,
     "sampling_hz": 250.0,

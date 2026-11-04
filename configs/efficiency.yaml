@@ -1,4 +1,4 @@
-output_dir: experiments/nasa-efficiency
+output_dir: artifacts/experiments/nasa-efficiency
 seeds: [11]
 scenarios: [iid]
 epochs: 15

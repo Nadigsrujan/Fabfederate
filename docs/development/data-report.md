@@ -1,5 +1,7 @@
 # Data work package report
 
+Historical development record from the original layout. Current locations and commands are in the [root README](../../README.md).
+
 Implemented the owned data, feature and simulation modules without commits.
 
 Exports:

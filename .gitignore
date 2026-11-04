@@ -11,8 +11,15 @@ data/processed/
 data/splits/
 experiments/
 outputs/
+artifacts/
 .env
 !.env.example
 
 # User-provided source reports remain local inputs.
 /*.pdf
+
+# Frontend dependencies and generated builds stay inside frontend/.
+frontend/node_modules/
+frontend/dist/
+frontend/coverage/
+*.tsbuildinfo

@@ -1,5 +1,7 @@
 # Independent scientific correctness review
 
+Historical development record from the original layout. Current locations and commands are in the [root README](../../README.md).
+
 Reviewed 4 November 2026, before final remediation. Scope: `implementation.md`
 sections 7–10 and 14, the data/features/simulation/model/federation/workflow paths,
 and genuine NASA smoke artifacts. This is a review of the inspected implementation,

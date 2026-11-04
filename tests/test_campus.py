@@ -7,7 +7,7 @@ from sklearn.dummy import DummyRegressor
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import StandardScaler
 
-from fabfederate.campus import validate_recordings
+from fabfederate.campus_cnc.validation import validate_recordings
 from fabfederate.models.bundle import ModelBundle
 
 

@@ -1,4 +1,4 @@
-output_dir: experiments/nasa-spectral
+output_dir: artifacts/experiments/nasa-spectral
 seeds: [11]
 scenarios: [iid]
 spectral: true

@@ -3,7 +3,7 @@ from pathlib import Path
 import pandas as pd
 from streamlit.testing.v1 import AppTest
 
-APP = Path(__file__).resolve().parents[1] / 'app' / 'streamlit_app.py'
+APP = Path(__file__).resolve().parents[1] / 'dashboard' / 'app.py'
 SCREENS = ['Data Explorer', 'Experiment Comparison', 'Client Heterogeneity',
            'Convergence / Cost', 'Wear Estimate']
 

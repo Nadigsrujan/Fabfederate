@@ -1,5 +1,7 @@
 # Execution ledger: implementation.md
 
+Historical development record from the original layout. Current locations and commands are in the [root README](../../README.md).
+
 Spec: ../../implementation.md. The user authorized implementing the complete plan on 4 November 2026.
 
 ## Rulings

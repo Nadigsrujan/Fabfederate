@@ -1,0 +1,2 @@
+# Reproduce the tested Python environment without maintaining a second version list.
+-r requirements.lock

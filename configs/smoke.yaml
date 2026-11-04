@@ -1,5 +1,5 @@
 # Genuine-data smoke run, not the full experimental budget.
-output_dir: experiments/nasa-smoke
+output_dir: artifacts/experiments/nasa-smoke
 window_size: 2048
 stride: 2048
 seeds: [11]

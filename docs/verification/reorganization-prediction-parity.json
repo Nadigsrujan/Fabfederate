@@ -1,0 +1,44 @@
+{
+  "models": {
+    "centralized_mlp": {
+      "rows": 545,
+      "maximum_absolute_difference": 0.0
+    },
+    "fedavg": {
+      "rows": 545,
+      "maximum_absolute_difference": 0.0
+    },
+    "fedprox": {
+      "rows": 545,
+      "maximum_absolute_difference": 0.0
+    },
+    "local_client_0": {
+      "rows": 545,
+      "maximum_absolute_difference": 0.0
+    },
+    "local_client_1": {
+      "rows": 545,
+      "maximum_absolute_difference": 0.0
+    },
+    "local_client_2": {
+      "rows": 545,
+      "maximum_absolute_difference": 0.0
+    },
+    "mean": {
+      "rows": 545,
+      "maximum_absolute_difference": 0.0
+    },
+    "median": {
+      "rows": 545,
+      "maximum_absolute_difference": 0.0
+    },
+    "random_forest": {
+      "rows": 545,
+      "maximum_absolute_difference": 0.0
+    }
+  },
+  "compared_rows": 4905,
+  "complete_studies": 5,
+  "api_default_study": "nasa-final",
+  "api_prediction": 0.3223896920681
+}

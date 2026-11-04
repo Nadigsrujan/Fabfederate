@@ -2,7 +2,7 @@ import zipfile
 
 import pytest
 
-from fabfederate.acquisition import extract_archive
+from fabfederate.data.acquisition import extract_archive
 
 
 def test_archive_traversal_cannot_write_outside_destination(tmp_path):

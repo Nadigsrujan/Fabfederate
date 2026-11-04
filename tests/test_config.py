@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 
 from fabfederate.config import load_config, validate_config
-from fabfederate.utils import stable_hash, write_json
+from fabfederate.utils.io import stable_hash, write_json
 
 
 def test_default_protocol_has_three_clients_and_no_hardware_dependency():
@@ -40,7 +40,7 @@ def test_json_provenance_is_deterministic_and_finite(tmp_path):
 
 
 def test_source_snapshot_changes_when_executed_code_changes(tmp_path):
-    from fabfederate.utils import source_snapshot
+    from fabfederate.utils.io import source_snapshot
     (tmp_path / "src").mkdir()
     source = tmp_path / "src" / "model.py"
     source.write_text("loss = 'mse'\n")

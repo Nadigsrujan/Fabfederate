@@ -1,5 +1,7 @@
 # Evaluation, explanation and dashboard delivery
 
+Historical development record from the original layout. Current locations and commands are in the [root README](../../README.md).
+
 Owned files: `src/fabfederate/evaluation/`, `src/fabfederate/explain/`, `app/streamlit_app.py`, `tests/test_evaluation.py`, `tests/test_explain.py`, `tests/test_dashboard.py`.
 
 ## Exports and integration

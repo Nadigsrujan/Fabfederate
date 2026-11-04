@@ -4,10 +4,8 @@ import argparse
 import json
 from pathlib import Path
 
-import pandas as pd
-
 from fabfederate.config import load_config
-from fabfederate.utils import write_json
+from fabfederate.utils.io import write_json
 
 
 def parser():
@@ -46,7 +44,7 @@ def main(argv=None):
     args = parser().parse_args(argv)
     try:
         if args.command == "download":
-            from fabfederate.acquisition import acquire_nasa
+            from fabfederate.data.acquisition import acquire_nasa
             result = acquire_nasa(args.data_root, args.force)
             print(json.dumps(result, indent=2))
         elif args.command in {"audit", "prepare", "study"}:
@@ -56,14 +54,14 @@ def main(argv=None):
             if args.output:
                 config["output_dir"] = str(args.output)
             if args.command == "study":
-                from fabfederate.workflow import run_study
+                from fabfederate.pipelines.study import run_study
                 if args.seeds:
                     config["seeds"] = args.seeds
                 if args.scenarios:
                     config["scenarios"] = args.scenarios
                 print(run_study(config, explain=not args.no_explain).resolve())
             else:
-                from fabfederate.sources import load_source
+                from fabfederate.data.dataset import load_source
                 runs = load_source(config)
                 output = Path(config["output_dir"])
                 if args.command == "audit":
@@ -72,34 +70,21 @@ def main(argv=None):
                     write_json(output / "audit.json", result)
                     print(json.dumps(result, indent=2))
                 else:
-                    from fabfederate.features.pipeline import prepare_dataset
+                    from fabfederate.data.preprocessing import prepare_dataset
                     prepared = prepare_dataset(runs, output, config)
                     print(f"{len(prepared.frame)} windows; {len(prepared.feature_names)} features; {output.resolve()}")
         elif args.command == "report":
             from fabfederate.evaluation.report import generate_report
             print(generate_report(args.experiment).resolve())
         elif args.command in {"predict", "explain"}:
-            from fabfederate.models.bundle import load_bundle
-            bundle = load_bundle(args.model)
-            frame = pd.read_csv(args.input)
-            prediction = bundle.predict(frame)
+            from fabfederate.inference.pipeline import explain_file, predict_file
             if args.command == "predict":
-                args.output.parent.mkdir(parents=True, exist_ok=True)
-                result = pd.DataFrame({"predicted_wear": prediction, "wear_unit": bundle.wear_unit,
-                                       "model": bundle.model_kind})
-                result.to_csv(args.output, index=False)
+                predict_file(args.model, args.input, args.output)
             else:
-                from fabfederate.explain.shap_analysis import explain_prediction, save_explanation
-                background = pd.read_parquet(args.background)
-                if "split" not in background or not background.split.eq("train").any():
-                    raise ValueError("Background must include a documented nonempty train split")
-                explanation = explain_prediction(bundle,
-                    background.loc[background.split == "train", bundle.feature_names],
-                    frame[bundle.feature_names])
-                save_explanation(explanation, args.output)
+                explain_file(args.model, args.input, args.background, args.output)
             print(args.output.resolve())
         elif args.command == "campus-validate":
-            from fabfederate.campus import validate_recordings
+            from fabfederate.campus_cnc.validation import validate_recordings
             print(validate_recordings(args.manifest, args.model, args.output).resolve())
     except (ValueError, FileNotFoundError, FileExistsError) as error:
         parser().exit(2, f"fabfederate: {error}\n")

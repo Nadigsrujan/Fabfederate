@@ -1,5 +1,7 @@
 # Models and federated implementation report
 
+Historical development record from the original layout. Current locations and commands are in the [root README](../../README.md).
+
 ## Public interface
 
 - `models.train.run_baselines(data, output_dir, config)` returns `mean`, `median`, `random_forest`, `centralized_mlp`, and `local_<client_id>` bundles. Each saves into `output_dir/<method>/`.
