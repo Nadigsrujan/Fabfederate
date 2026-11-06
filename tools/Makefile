@@ -1,6 +1,8 @@
 PYTHON ?= .venv/bin/python
 export MPLCONFIGDIR ?= /tmp/fabfederate-matplotlib
 export FLWR_TELEMETRY_ENABLED ?= 0
+export OMP_NUM_THREADS ?= 1
+export LOKY_MAX_CPU_COUNT ?= 1
 CONFIG ?= configs/default.yaml
 STUDY ?= artifacts/experiments/nasa-final
 STUDY_OUTPUT ?= artifacts/experiments/new-study
@@ -11,20 +13,20 @@ INPUT ?= artifacts/inference/example_features.csv
 
 help:
 	@printf '%s\n' 'FabFederate-CNC commands (run from the repository root):' \
-	  '  make api               Start the local Python backend on :8000' \
-	  '  make frontend          Start the React website on :5173' \
-	  '  make download          Retrieve the NASA source dataset' \
-	  '  make audit             Audit raw NASA recordings' \
-	  '  make prepare           Generate features and split/client manifests' \
-	  '  make study             Train and evaluate all configured methods' \
-	  '  make report            Regenerate a saved study report' \
-	  '  make predict           Predict from INPUT using MODEL' \
-	  '  make explain           Explain INPUT using the saved training reference' \
-	  '  make test              Run Python and frontend tests' \
-	  '  make check             Run Python lint and the TypeScript production build'
+	  '  make -f tools/Makefile api               Start the local Python backend on :8000' \
+	  '  make -f tools/Makefile frontend          Start the React website on :5173' \
+	  '  make -f tools/Makefile download          Retrieve the NASA source dataset' \
+	  '  make -f tools/Makefile audit             Audit raw NASA recordings' \
+	  '  make -f tools/Makefile prepare           Generate features and split/client manifests' \
+	  '  make -f tools/Makefile study             Train and evaluate all configured methods' \
+	  '  make -f tools/Makefile report            Regenerate a saved study report' \
+	  '  make -f tools/Makefile predict           Predict from INPUT using MODEL' \
+	  '  make -f tools/Makefile explain           Explain INPUT using the saved training reference' \
+	  '  make -f tools/Makefile test              Run Python and frontend tests' \
+	  '  make -f tools/Makefile check             Run Python lint and the TypeScript production build'
 
 install:
-	$(PYTHON) -m pip install -r requirements.lock
+	$(PYTHON) -m pip install -r requirements.txt
 	$(PYTHON) -m pip install --no-build-isolation --no-deps -e .
 
 frontend-install:

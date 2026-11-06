@@ -36,6 +36,6 @@ def source_snapshot(root: str | Path) -> dict:
     """Identify executed project code independently of an uncommitted Git revision."""
     root = Path(root)
     paths = [p for folder in ("src",) for p in (root / folder).rglob("*.py")]
-    paths += [root / name for name in ("pyproject.toml", "requirements.lock") if (root / name).is_file()]
+    paths += [root / name for name in ("pyproject.toml", "requirements.txt") if (root / name).is_file()]
     files = {str(path.relative_to(root)): file_hash(path) for path in sorted(paths)}
     return {"sha256": stable_hash(files), "files": files}
