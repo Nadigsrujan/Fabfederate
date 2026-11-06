@@ -112,3 +112,13 @@ def test_report_preserves_cut_identity_when_averaging_training_seeds(tmp_path):
     assert set(points.run_id) == {'cut1', 'cut2'}
     assert points.recorded_seeds.tolist() == [2, 2]
     np.testing.assert_allclose(points.sort_values('run_id').prediction, [.2, .7])
+
+
+def test_report_preserves_derived_target_provenance(tmp_path):
+    import json
+    pd.DataFrame([{'method': 'mean', 'split': 'test', 'mae': .1, 'rmse': .12}]).to_csv(
+        tmp_path / 'metrics.csv', index=False)
+    (tmp_path / 'schema.json').write_text(json.dumps({
+        'target_provenance': 'Publisher-smoothed derived wear targets, not independent measurements.'}))
+    report = generate_report(tmp_path)
+    assert 'Publisher-smoothed derived wear targets' in report.read_text()

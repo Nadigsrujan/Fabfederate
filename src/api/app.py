@@ -1,4 +1,4 @@
-"""Local, read-only experiment and prediction adapter for the React client.
+"""Local experiment, prediction and measured-feedback adapter for the React client.
 
 Only trusted, existing project bundles are loaded. No uploads or user-supplied
 filesystem paths are accepted; serve this research adapter on loopback only.
@@ -6,6 +6,8 @@ filesystem paths are accepted; serve this research adapter on loopback only.
 from __future__ import annotations
 
 import json
+from datetime import datetime, timezone
+from uuid import uuid4
 import math
 import os
 from pathlib import Path
@@ -43,6 +45,15 @@ class PredictionRequest(BaseModel):
         if (self.sample_id is None) == (self.features is None):
             raise ValueError('provide exactly one of sample_id or features')
         return self
+
+
+class MeasurementRequest(BaseModel):
+    model_config = ConfigDict(extra='forbid', allow_inf_nan=False)
+    model: str = Field(min_length=1, max_length=128)
+    sample_id: str = Field(min_length=1, max_length=128)
+    measured_wear: StrictFloat = Field(ge=0)
+    wear_unit: str = Field(min_length=1, max_length=16)
+    note: str = Field(default='', max_length=1000)
 
 
 def _finite(value):
@@ -185,8 +196,9 @@ def create_app(experiments_root: Path | None = None) -> FastAPI:
                 items.append({'id': child.name, 'status': 'complete', **choices(manifest)})
             except HTTPException:
                 continue
-        default = 'nasa-final' if any(x['id'] == 'nasa-final' for x in items) else (
-            items[0]['id'] if items else None)
+        default = next((preferred for preferred in ('nasa-optimized', 'nasa-final')
+                        if any(x['id'] == preferred for x in items)),
+                       items[0]['id'] if items else None)
         return _finite({'experiments': [{**item, 'default': item['id'] == default}
                                          for item in items], 'default_id': default})
 
@@ -291,20 +303,61 @@ def create_app(experiments_root: Path | None = None) -> FastAPI:
                     raise ValueError('training reference unavailable')
                 indices = np.linspace(0, len(background) - 1, min(16, len(background)), dtype=int)
                 result = explain_prediction(bundle, background.iloc[indices], sample,
-                                            max_background=16, max_evals=2 * len(names) + 1)
+                                            max_background=16, max_evals=3 * (2 * len(names) + 1))
                 explanation = {
                     'feature_names': result['feature_names'], 'values': result['values'][0],
                     'base_value': result['base_values'][0], 'prediction': result['predictions'][0],
                     'reconstruction_error': result['reconstruction_error'][0],
                     'runtime_seconds': result['runtime_seconds'],
+                    'diagnostic': result['diagnostics'][0],
                 }
         except (TypeError, ValueError):
             raise HTTPException(400, 'Prediction requires finite features and a valid training reference') from None
-        return _finite({'model': model_id, 'sample': metadata, 'predicted_wear': predicted,
+        training = frame.loc[frame.split.eq('train'), names]
+        outside = (values[0] < training.min().to_numpy()) | (values[0] > training.max().to_numpy())
+        outside_count = int(outside.sum())
+        advisory = {'status': 'review_required' if outside_count else 'within_reference',
+            'out_of_range_features': outside_count,
+            'message': (f'{outside_count} features are outside the saved training minimum/maximum. '
+                        'Verify acquisition and feature compatibility before using this estimate.'
+                        if outside_count else 'Inputs lie within the saved training feature ranges. '
+                        'Confirm wear by qualified measurement before an operational decision.'),
+            'policy': 'Training-only feature min/max check; not calibrated uncertainty or a wear threshold.'}
+        return _finite({'advisory': advisory, 'model': model_id, 'sample': metadata, 'predicted_wear': predicted,
             'measured_wear': measured, 'wear_unit': bundle.wear_unit,
             'features': [{'name': name, 'value': values[0, index]}
                          for index, name in enumerate(names)],
             'explanation': explanation, 'limitations': LIMITATIONS})
+
+    @application.post('/api/experiments/{identifier}/measurements', status_code=201)
+    def save_measurement(identifier: str, request: MeasurementRequest):
+        path, _ = experiment(identifier)
+        model_id = _identifier(request.model)
+        manifests = dict(_model_manifests(path))
+        if model_id not in manifests:
+            raise HTTPException(404, 'Model not found in this experiment')
+        if request.wear_unit != manifests[model_id].get('wear_unit'):
+            raise HTTPException(422, 'Measurement unit must match the selected model')
+        frame = _frame(path)
+        if request.sample_id not in frame.index or frame.loc[request.sample_id, 'split'] not in ('test', 'validation'):
+            raise HTTPException(404, 'Held-out sample not found')
+        record = {'id': uuid4().hex, 'recorded_at': datetime.now(timezone.utc).isoformat(),
+            'experiment': identifier, 'model': model_id,
+            'bundle_sha256': manifests[model_id].get('sha256'),
+            'sample_id': request.sample_id, 'source': _sample_metadata(frame.loc[request.sample_id]),
+            'measured_wear': request.measured_wear, 'wear_unit': request.wear_unit,
+            'note': request.note, 'status': 'operator_entered_pending_review',
+            'used_for_training': False}
+        directory = _contained(root, 'feedback')
+        directory.mkdir(parents=True, exist_ok=True)
+        target = _contained(directory, 'measurements.jsonl')
+        descriptor = os.open(target, os.O_APPEND | os.O_CREAT | os.O_WRONLY | os.O_NOFOLLOW, 0o600)
+        try:
+            os.write(descriptor, (json.dumps(_finite(record), allow_nan=False) + '\n').encode())
+        finally:
+            os.close(descriptor)
+        return {'id': record['id'], 'status': record['status'],
+                'message': 'Measurement saved for review. Existing models and test labels are unchanged.'}
 
     @application.get('/api/experiments/{identifier}/report')
     def report(identifier: str):

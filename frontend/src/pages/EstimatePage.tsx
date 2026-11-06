@@ -21,7 +21,7 @@ export function parseFeatureCsv(text: string, expected: string[]): number[][] {
 }
 
 export function EstimatePage({ study }: { study: Study }) {
-  const [model, setModel] = useState(study.models.find((entry) => entry.id === "fedavg")?.id ?? study.models[0]?.id ?? "");
+  const [model, setModel] = useState([...study.models].filter((entry) => !["mean", "median"].includes(entry.id) && entry.validation_mae != null).sort((a, b) => a.validation_mae! - b.validation_mae!)[0]?.id ?? study.models[0]?.id ?? "");
   const [samples, setSamples] = useState<Sample[]>([]);
   const [sampleId, setSampleId] = useState("");
   const [mode, setMode] = useState<"recorded" | "upload">("recorded");
@@ -29,6 +29,9 @@ export function EstimatePage({ study }: { study: Study }) {
   const [fileName, setFileName] = useState("");
   const [row, setRow] = useState(0);
   const [explain, setExplain] = useState(true);
+  const [measurement, setMeasurement] = useState("");
+  const [measurementStatus, setMeasurementStatus] = useState("");
+  const [saving, setSaving] = useState(false);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
   const [result, setResult] = useState<Prediction | null>(null);
@@ -56,10 +59,23 @@ export function EstimatePage({ study }: { study: Study }) {
       setUpload(parseFeatureCsv(await file.text(), selectedModel.feature_names)); setRow(0); setFileName(file.name);
     } catch (reason) { setError((reason as Error).message); }
   }
+  async function saveMeasurement() {
+    if (!result?.sample || !measurement.trim()) return;
+    setSaving(true); setMeasurementStatus("");
+    try {
+      const saved = await request<{ message: string }>(`/api/experiments/${encodeURIComponent(study.id)}/measurements`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ model: result.model, sample_id: sampleId,
+          measured_wear: Number(measurement), wear_unit: result.wear_unit }),
+      });
+      setMeasurementStatus(saved.message); setMeasurement("");
+    } catch (reason) { setMeasurementStatus((reason as Error).message); }
+    finally { setSaving(false); }
+  }
   async function predict() {
     if (!model) return;
     const controller = new AbortController(); activeRequest.current?.abort(); activeRequest.current = controller;
-    setPending(true); setError(""); setResult(null);
+    setPending(true); setError(""); setResult(null); setMeasurementStatus("");
     try {
       const prediction = await request<Prediction>(`/api/experiments/${encodeURIComponent(study.id)}/predict`, {
         method: "POST", headers: { "Content-Type": "application/json" }, signal: controller.signal,
@@ -69,25 +85,27 @@ export function EstimatePage({ study }: { study: Study }) {
     } catch (reason) { if (!controller.signal.aborted) setError((reason as Error).message); }
     finally { if (!controller.signal.aborted) setPending(false); }
   }
-  const contributions = result?.explanation?.feature_names.map((name, index) => ({ name, value: result.explanation!.values[index] })).sort((a,b) => Math.abs(b.value)-Math.abs(a.value)).slice(0, 8) ?? [];
-  const maxContribution = Math.max(.00001, ...contributions.map((entry) => Math.abs(entry.value)));
+  const contributions = result?.explanation?.feature_names.map((name, index) => ({ name, value: result.explanation!.values[index] })).filter((entry) => Math.abs(entry.value) > 1e-12).sort((a,b) => Math.abs(b.value)-Math.abs(a.value)).slice(0, 8) ?? [];
+  const maxContribution = Math.max(1e-12, ...contributions.map((entry) => Math.abs(entry.value)));
   return <><div className="page-heading"><div><h1>Understand one estimate.</h1><p>Use a recorded sample or your own matching features, then inspect the model’s reasoning.</p></div><span className="status-chip"><ScanLine size={14} /> Offline inference</span></div>
-    <div className="estimate-grid"><section className="panel estimate-form"><SectionHeading title="Choose your input" description="Every estimate uses the selected model’s saved transformation." />
-      <Select label="Saved model" value={model} disabled={pending} onChange={(e) => { setModel(e.target.value); setUpload([]); setFileName(""); }}>{study.models.map((entry) => <option value={entry.id} key={entry.id}>{methodName(entry.id)}</option>)}</Select>
+    <div className="estimate-grid"><section className="panel estimate-form"><SectionHeading title="Choose your input" description="Initial model chosen by saved validation error. Every estimate uses its saved transformation." />
+      <Select label="Saved model" value={model} disabled={pending} onChange={(e) => { setModel(e.target.value); setUpload([]); setFileName(""); }}>{study.models.map((entry) => <option value={entry.id} key={entry.id}>{methodName(entry.id)}{["mean", "median"].includes(entry.id) ? " (constant reference)" : ""}</option>)}</Select>
       <p className="field-help">{selectedModel?.feature_names.length ?? 0} ordered features, output in {selectedModel?.wear_unit ?? "source units"}. Saved {study.default_scenario} model, seed {study.default_seed}.</p>
       <div className="segmented input-tabs" aria-label="Input source"><button disabled={pending} aria-pressed={mode === "recorded"} onClick={() => setMode("recorded")}>Recorded sample</button><button disabled={pending} aria-pressed={mode === "upload"} onClick={() => setMode("upload")}>Upload features</button></div>
       {mode === "recorded" ? <><Select label="Held-out sample" disabled={pending || !samples.length} value={sampleId} onChange={(e) => setSampleId(e.target.value)}>{!samples.length && <option value="">Loading recorded samples…</option>}{samples.map((sample) => <option key={sample.id} value={sample.id}>{sample.run_id} / window {sample.window_id} / {sample.split}</option>)}</Select><p className="field-help">Recorded source identities stay attached to the prediction.</p>{sampleError && <p role="alert" className="form-error">{sampleError}</p>}</> : <><div className="upload-area"><FileUp size={28} /><strong>{fileName || "Choose a feature CSV"}</strong><p>Exact model columns, no measured-wear label. Up to 10 MiB.</p><label className="button button-outline">Choose file<input type="file" accept=".csv,text/csv" disabled={pending} aria-label="Upload feature CSV" onChange={(e) => void uploadFile(e.target.files?.[0])} /></label></div><button className="text-link" onClick={downloadHeader}>Download matching header <ArrowUpRight size={13} /></button>{upload.length > 0 && <label className="number-field">Feature row <input type="number" min={1} max={upload.length} value={row+1} disabled={pending} onChange={(e) => setRow(Math.max(0, Math.min(upload.length-1, Math.trunc(Number(e.target.value))-1)))} /><span>of {count(upload.length)}</span></label>}</>}
-      <label className="checkbox-field"><input type="checkbox" checked={explain} disabled={pending} onChange={(e) => setExplain(e.target.checked)} /><span><strong>Explain this estimate</strong><small>SHAP contributions from a training-only reference</small></span></label>
+      <label className="checkbox-field"><input type="checkbox" checked={explain} disabled={pending} onChange={(e) => setExplain(e.target.checked)} /><span><strong>Explain this estimate</strong><small>Sensor contributions and a plain-language summary</small></span></label>
       {error && <p role="alert" className="form-error">{error}</p>}
       <Button className="estimate-button" disabled={pending || !model || (mode === "recorded" ? !sampleId : !upload.length)} onClick={() => void predict()}>{pending ? <LoaderCircle className="spin" size={17} /> : <ScanLine size={17} />}{pending ? "Computing estimate…" : "Estimate wear"}</Button>
     </section><section className="panel estimate-output" aria-live="polite" aria-busy={pending}>
       {!result ? <div className="estimate-empty"><div className="estimate-empty-icon"><ScanLine size={40} strokeWidth={1.1} /></div><h2>{pending ? "Reading the selected model…" : "A prediction with context."}</h2><p>{pending ? "Computing wear and the requested feature contributions." : "Choose a sample to see estimated flank wear, measured wear when available, and the features that shaped the result."}</p><div><span>Measured units</span><span>Model provenance</span><span>Feature contributions</span></div></div> : <>
         <SectionHeading title="Estimated flank wear" action={<span className="tag">{methodName(result.model)}</span>} />
         <div className="prediction-number">{number(result.predicted_wear)}<span>{result.wear_unit}</span></div>
-        <div className="prediction-reference"><div><span>Measured wear</span><strong>{result.measured_wear == null ? "Not supplied" : `${number(result.measured_wear)} ${result.wear_unit}`}</strong></div><div><span>Absolute error</span><strong>{result.measured_wear == null ? "Unavailable" : `${number(Math.abs(result.predicted_wear-result.measured_wear))} ${result.wear_unit}`}</strong></div></div>
+        <div className="prediction-reference"><div><span>{study.dataset.name === "uniwear_nuaa" ? "Dataset reference wear (derived)" : "Measured wear"}</span><strong>{result.measured_wear == null ? "Not supplied" : `${number(result.measured_wear)} ${result.wear_unit}`}</strong></div><div><span>Absolute error</span><strong>{result.measured_wear == null ? "Unavailable" : `${number(Math.abs(result.predicted_wear-result.measured_wear))} ${result.wear_unit}`}</strong></div></div>
         {result.sample && <p className="prediction-source">{result.sample.run_id}, window {result.sample.window_id}. {result.sample.split === "test" ? "Final test" : "Validation"} sample.</p>}
         <details className="feature-details"><summary>Inspect input features</summary><div className="table-scroll"><table><thead><tr><th>Raw feature</th><th>Recorded value</th></tr></thead><tbody>{result.features.map((feature) => <tr key={feature.name}><th scope="row">{feature.name.replace(/_+/g, " ")}</th><td>{number(feature.value, 5)}</td></tr>)}</tbody></table></div></details>
-        {result.explanation && <div className="explanation"><h3><Sparkles size={16} /> What influenced this prediction</h3><p>Signed model contributions relative to the training reference.</p><div className="contribution-list">{contributions.map((entry) => <div key={entry.name}><span>{entry.name.replace(/_+/g, " ")}</span><div className="contribution-track"><i className={entry.value < 0 ? "negative" : "positive"} style={{ width: `${Math.abs(entry.value)/maxContribution*48}%` }} /></div><strong>{entry.value > 0 ? "+" : ""}{number(entry.value)}</strong></div>)}</div><p className="field-help">Reference {number(result.explanation.base_value)} {result.wear_unit}. Reconstruction error {result.explanation.reconstruction_error.toExponential(1)}.</p></div>}
+        {result.explanation && <div className="explanation"><h3><Sparkles size={16} /> What influenced this prediction</h3><p>{result.explanation.diagnostic?.summary ?? "Signed model contributions relative to the training reference."}</p>{!contributions.length && <InfoNote>{result.explanation.diagnostic?.status === "constant_baseline" ? "Constant comparison baseline — sensor features are intentionally unused." : "No measurable local contribution for this input. Try another held-out sample or model."}</InfoNote>}<div className="contribution-list">{contributions.map((entry) => <div key={entry.name}><span>{entry.name.replace(/_+/g, " ")}</span><div className="contribution-track"><i className={entry.value < 0 ? "negative" : "positive"} style={{ width: `${Math.abs(entry.value)/maxContribution*48}%` }} /></div><strong>{entry.value > 0 ? "+" : ""}{Math.abs(entry.value) < 0.0001 ? entry.value.toExponential(2) : number(entry.value)}</strong></div>)}</div><p className="field-help">Reference {number(result.explanation.base_value)} {result.wear_unit}. Reconstruction error {result.explanation.reconstruction_error.toExponential(1)}.</p></div>}
+        {result.advisory && <InfoNote>{result.advisory.message} {result.advisory.policy}</InfoNote>}
+        {result.sample && <div className="measurement-feedback"><h3>Record a measured wear value</h3><p>Save a qualified measurement for review and future dataset curation.</p><label className="number-field">New measured wear ({result.wear_unit})<input type="number" min="0" step="any" value={measurement} onChange={(event) => setMeasurement(event.target.value)} /></label><Button disabled={saving || !measurement.trim() || !Number.isFinite(Number(measurement)) || Number(measurement) < 0} onClick={() => void saveMeasurement()}>{saving ? "Saving…" : "Save measurement"}</Button>{measurementStatus && <p role="status">{measurementStatus}</p>}</div>}
         <InfoNote>Research estimate for human review. Attributions describe the model, not the physical causes of wear. No calibrated uncertainty or inspection threshold is available.</InfoNote>
       </>}
     </section></div>

@@ -9,6 +9,7 @@ import yaml
 DEFAULTS = {
     "dataset": "nasa",
     "phm_edge_reduction": None,
+    "optimize_baselines": False,
     "data_path": "data/raw/nasa/3. Milling/mill.mat",
     "output_dir": "artifacts/experiments/nasa-study",
     "window_size": 1024,
@@ -43,8 +44,8 @@ DEFAULTS = {
 
 
 def validate_config(config: dict) -> dict:
-    if config["dataset"] not in {"nasa", "phm2010"}:
-        raise ValueError("dataset must be nasa or phm2010")
+    if config["dataset"] not in {"nasa", "phm2010", "uniwear_nuaa"}:
+        raise ValueError("dataset must be nasa, phm2010 or uniwear_nuaa")
     if config["dataset"] == "phm2010" and config["phm_edge_reduction"] not in {"mean", "max"}:
         raise ValueError("PHM requires an explicit mean/max edge-wear reduction")
     for key in ("dropout", "learning_rate", "test_fraction", "validation_fraction", "robustness_noise"):

@@ -271,3 +271,12 @@ tbody tr:last-child th, tbody tr:last-child td { border-bottom: 0; }
 .line-plot text { fill: #5b6f84; }
 .upload-area label:focus-within { outline: 3px solid var(--ring); outline-offset: 4px; }
 .client-node, .coordinator span:not(.tag) { color: #5b6f84; }
+.measurement-feedback { margin-top: 24px; padding-top: 22px; border-top: 1px solid var(--border); }
+.measurement-feedback h3 { font-size: 16px; font-weight: 500; }
+.measurement-feedback p { font-size: 14px; line-height: 1.6; color: var(--muted-foreground); margin: 8px 0 14px; }
+.measurement-feedback .number-field { margin-bottom: 14px; flex-wrap: wrap; }
+.explanation h3 { font-size: 16px; }
+.explanation > p { font-size: 14px; line-height: 1.65; color: #526b85; }
+.contribution-list > div { font-size: 13px; }
+.contribution-list strong { font-size: 12px; }
+.prediction-source { font-size: 12px; line-height: 1.6; }

@@ -1,5 +1,37 @@
 # Verified implementation and experiment evidence
 
+## Optimization and additional-data results — 6 November 2026
+
+The original NASA results below remain the historical reference. New study artifacts are under `artifacts/experiments/nasa-optimized/` and `artifacts/experiments/uniwear-nuaa/`. All reported errors are test MAE/RMSE in mm, averaged across seeds 11, 22 and 33. Repeated seeds use the same fixed group split and do not constitute new independent experimental data.
+
+| NASA model / study | MAE | RMSE | MAE seed SD |
+|---|---:|---:|---:|
+| Original FedAvg | 0.176218 | 0.206747 | 0.001883 |
+| Optimized FedAvg | 0.173872 | 0.204798 | 0.002890 |
+| Optimized FedProx | 0.173865 | 0.204784 | 0.002898 |
+| New gradient-boosting comparator | 0.138254 | 0.177923 | 0.000000 |
+
+FedAvg MAE decreases by 1.33% on the established test cases. This is a modest exploratory gain: seed variability overlaps, and the test split has been reused across research iterations. The gradient-boosting result is a separate non-federated comparator, not evidence that FL beats centralized training. Neural settings and per-family classical candidates were selected by validation scores; test errors were not used in those selectors. The app initially selects a learned model by saved validation error, which can differ from the lowest observed test-error model.
+
+### Separate Uniwear NUAA benchmark
+
+[Source and limitations](../dataset_cards/uniwear_nuaa.md): 31,388 publisher-smoothed rows from nine NUAA experiments, three actual signal columns, no timestamp/ID/target predictors, three logical training clients and complete experiment holdouts. Publisher-derived wear targets are not independent original measurements. These errors cannot be compared directly with NASA or used to claim transfer gains.
+
+| NUAA model | MAE | RMSE | MAE seed SD |
+|---|---:|---:|---:|
+| median | 0.070439 | 0.077386 | 0.000000 |
+| centralized_mlp | 0.060689 | 0.067337 | 0.002538 |
+| fedavg | 0.058359 | 0.067169 | 0.009307 |
+| fedprox | 0.058244 | 0.067067 | 0.009498 |
+| random_forest | 0.067867 | 0.076414 | 0.000039 |
+| extra_trees | 0.067722 | 0.075209 | 0.000159 |
+| hist_gradient_boosting | 0.068945 | 0.076392 | 0.000000 |
+| ridge | 0.061858 | 0.068093 | 0.000000 |
+
+Every run saves bundles, validation selections, held-out predictions, client/group manifests and model-specific SHAP. Attribution stability records the actual `top_k` (three on this dataset), so full-set overlap is descriptive and is not proof of explanation robustness.
+
+## Original NASA study
+
 Completed offline public-data research implementation, 4 November 2026. This summary is generated from the saved real NASA study CSVs. The full automatically generated report is [saved study report](../../artifacts/experiments/nasa-final/report.md).
 
 ## What was executed
@@ -10,7 +42,7 @@ Completed offline public-data research implementation, 4 November 2026. This sum
 - Separate seed11 FFT-feature and15-round efficiency experiments. FFT extends36 to54 predictors; it analyzes already processed250Hz sensor signals, not raw high-frequency acoustic recordings.
 - Model-specific SHAP examples across held-out groups and repeated seeds, plus feature-noise robustness and missing-feature rejection.
 - Fresh-process reproduction of IID seed11: all4905 saved prediction rows exactly match the original study. The locked environment is shared; this is not new independent experimental data.
-- Run the current correctness checks with `make test` and `make check`; setup and command details are in the [root README](../../README.md).
+- Run the current correctness checks with `make -f tools/Makefile test` and `make -f tools/Makefile check`; setup and command details are in the [root README](../../README.md).
 
 ## Observed held-out errors
 

@@ -1,6 +1,7 @@
 """Generate a compact research report strictly from experiment CSV artifacts."""
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import numpy as np
@@ -74,8 +75,8 @@ def generate_report(experiment_dir: Path) -> Path:
     sections = [
         '# FabFederate-CNC experiment report',
         f'Artifact directory: `{directory.name}`. Every value and figure below comes from '
-        'saved CSV artifacts. NASA evaluation is case-heldout; independent physical-tool '
-        'identity is unverified. Windows are not additional independent machining cases.',
+        'saved CSV artifacts. Evaluation uses saved group-heldout splits; physical-tool '
+        'identity depends on source metadata. Rows/windows are not additional independent groups.',
         '## Held-out evaluation across recorded seeds', _table(summary.head(60)),
         '[Full evaluation summary](evaluation_summary.csv) · [All per-run metrics](metrics.csv) '
         '· [All saved predictions](predictions.csv)',
@@ -83,6 +84,11 @@ def generate_report(experiment_dir: Path) -> Path:
         'calibrated prediction intervals. Single-seed standard deviations are unavailable. '
         'Report tables show at most 60 rows; CSV files retain every row.',
     ]
+    schema_path = directory / 'schema.json'
+    if schema_path.is_file():
+        provenance = json.loads(schema_path.read_text()).get('target_provenance')
+        if provenance:
+            sections.insert(2, f'Data provenance and target limitations: {provenance}')
     prediction_path = directory / 'predictions.csv'
     if prediction_path.exists():
         predictions = pd.read_csv(prediction_path)

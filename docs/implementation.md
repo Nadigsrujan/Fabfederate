@@ -527,7 +527,21 @@ A proposed upload flow accepts an explicitly documented feature CSV or a support
 
 The subsequent explicit user request adds a React/TypeScript/Tailwind workspace under `frontend/`, with Overview, Experiments, Clients, Dataset and Wear Estimate pages. Shared components live in `frontend/src/components/ui/`; styles are in `frontend/src/styles/globals.css`. The reusable animated header is named `research-background.tsx` and renders project content rather than a generic demo.
 
-The backend is `src/api/app.py`. Its local endpoints provide health, complete experiment discovery/details, bounded held-out sample lists, selected-model prediction with optional SHAP, and report download. CSV inputs require the exact ordered feature schema. The API loads trusted existing bundles and uses training-only SHAP references. It accepts no arbitrary filesystem paths or model uploads. Start both processes with `make api` and `make frontend`; this interface extension does not change the revised PDF's offline research, dataset or campus-access boundaries.
+The backend is `src/api/app.py`. Its local endpoints provide health, complete experiment discovery/details, bounded held-out sample lists, selected-model prediction with optional SHAP, and report download. CSV inputs require the exact ordered feature schema. The API loads trusted existing bundles and uses training-only SHAP references. It accepts no arbitrary filesystem paths or model uploads. Start both processes with `make -f tools/Makefile api` and `make -f tools/Makefile frontend`; this interface extension does not change the revised PDF's offline research, dataset or campus-access boundaries.
+
+### 11.5 Explanation diagnostics, inspection support and measured feedback
+
+Constant mean/median baselines now display an explicit explanation that they ignore inputs; zero bars are not presented as feature importance. Learned-model results include signed SHAP values and a deterministic plain-language summary grounded in those exact values. Three bounded permutations replace the minimum one-permutation interactive budget. Very small contributions use scientific notation. The initial selectable model uses saved validation error and excludes constant baselines.
+
+The prediction API includes a transparent training-feature min/max compatibility check. Its advisory supports qualified inspection and measurement without an assumed wear replacement threshold. It does not constitute calibrated uncertainty.
+
+`POST /api/experiments/{id}/measurements` validates model/sample identity, finite nonnegative wear and matching units, then records a timestamp, model digest, source identity and optional note in a separate feedback log. Entries have `operator_entered_pending_review` status and `used_for_training=false`. Existing models and evaluation labels are unchanged. This implements the recording part of the supplied feedback architecture; admission into later supervised training still requires review and fresh split discipline.
+
+### 11.6 Optimized NASA and an additional derived-data benchmark
+
+`configs/optimized.yaml` uses the existing NASA case split and three seeds across all five scenarios. A four-candidate neural search used validation MAE to choose hidden dimensions `[32,16]`, zero dropout and learning rate 0.001. Training retains 90 central epochs, 30 FL rounds and three local epochs. Optional classical searches add Extra Trees, histogram gradient boosting and Ridge; all candidates use training data for fitting and validation for selection, with parameters/scores persisted in model metadata.
+
+`configs/uniwear_nuaa.yaml` trains a separate nine-experiment NUAA subset of the pinned public Uniwear release. It uses the three actual published shared signal columns, excludes timestamps/IDs/labels from predictors, holds out complete experiments, and runs three logical clients. The source already smooths/downsamples signals and wear targets, so it is a derived-target benchmark with different semantics from NASA's directly measured labels. See [source card](dataset_cards/uniwear_nuaa.md). No cross-dataset pooling or NASA accuracy gain from NUAA is claimed. The three-cutter PHM subset cannot support the same three-client plus held-out-cutter protocol and is excluded.
 
 ## 12. End-to-end project workflows
 
@@ -581,8 +595,8 @@ The supplied modular-monorepo recommendation informed the user-requested reorgan
 fabfederate-cnc/
   README.md
   pyproject.toml
-  requirements.lock
-  Makefile
+  requirements.txt
+  tools/Makefile
   .env.example
   configs/                      # complete per-study configuration files
   data/raw/                     # unchanged original NASA files and source manifest
@@ -756,6 +770,7 @@ Task status reflects the verified implementation. T01-T26 and the supported FFT 
 - [x] **X02 - Spectral/wavelet ablation (FFT completed; wavelets remain optional):** add only supported transforms and quantify incremental accuracy/cost. **Depends:** T08, T19 and verified sampling. **Evidence:** matched feature-ablation table.
 - [ ] **X03 - Waveform 1D-CNN:** establish independent-data/compute feasibility before modeling. **Depends:** T19 and audited waveform support. **Evidence:** declared architecture, fair comparisons, and latency/error results.
 - [x] **X04 - Local React/API workspace:** implemented by subsequent explicit user request, with real saved-study discovery, schema-validated inference, bounded SHAP and regression tests.
+- [x] **X06 - Additional NUAA benchmark and validation-based optimization:** implemented with attributed acquisition, group-disjoint preparation, separate results and saved model diagnostics.
 - [ ] **X05 - Multi-user deployment or remote federation:** requires a separately defined multi-user/multi-site need, transport and access-control design, and appropriate validation.
 
 ### Suggested work allocation and schedule

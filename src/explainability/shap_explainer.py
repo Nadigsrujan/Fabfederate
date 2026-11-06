@@ -65,7 +65,40 @@ def explain_prediction(bundle, background: pd.DataFrame, samples: pd.DataFrame,
     tolerance = 1e-5 * max(1., float(np.abs(predictions).max()))
     if not np.isfinite(attributions).all() or not np.isfinite(base).all() or np.any(error > tolerance):
         raise ValueError('SHAP reconstruction check failed for the selected predictor')
+    reference_predictions = predictor(reference)
+    reference_range = float(np.ptp(reference_predictions))
+    diagnostics = []
+    from sklearn.dummy import DummyRegressor
+    constant = isinstance(getattr(bundle, 'model', None), DummyRegressor)
+    unit = getattr(bundle, 'wear_unit', 'source units')
+    for row, prediction, baseline in zip(attributions, predictions, base):
+        active = np.flatnonzero(np.abs(row) > 1e-12)
+        if constant:
+            status = 'constant_baseline'
+            summary = (f'This baseline returns the same {prediction:.4f} {unit} for every input. '
+                       'It ignores sensor features, so all feature contributions are zero. '
+                       'This is expected, not a failed explanation. Choose a learned model '
+                       'such as FedAvg or Random forest to inspect sensor influence.')
+        elif not len(active):
+            status = 'no_local_effect'
+            summary = ('No measurable feature contribution was found for this sample against '
+                       'the selected training reference. The model may be locally flat; '
+                       'this does not establish that the sensors have no physical effect.')
+        else:
+            status = 'attributed'
+            top = int(np.argmax(np.abs(row)))
+            label = names[top].replace('_', ' ')
+            direction = 'raises' if row[top] > 0 else 'lowers'
+            summary = (f'Compared with the training reference ({baseline:.4f} {unit}), '
+                       f'{label} has the largest contribution and {direction} the estimate '
+                       f'by {abs(row[top]):.4g} {unit}. '
+                       f'{len(active)} features have measurable contributions. '
+                       'These contributions explain this model output, not physical causation.')
+        diagnostics.append({'status': status, 'summary': summary,
+                            'influential_features': len(active),
+                            'reference_prediction_range': reference_range})
     return {
+        'diagnostics': diagnostics,
         'feature_names': names,
         'values': attributions.tolist(),
         'base_values': base.tolist(),

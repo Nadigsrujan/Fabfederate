@@ -6,7 +6,7 @@ The React frontend is the single application interface. The retired Streamlit ap
 
 ## Environment and orchestration
 
-Python3.12 was available in the bundled runtime; the host system Python3.9 was below the specification floor. Dependencies are installed in .venv and frozen to requirements.lock. The WebSocket version is pinned alongside the tested Flower/Uvicorn stack. `pip check` validates the resolved environment.
+Python3.12 was available in the bundled runtime; the host system Python3.9 was below the specification floor. Dependencies are installed in .venv and frozen to requirements.txt. The WebSocket version is pinned alongside the tested Flower/Uvicorn stack. `pip check` validates the resolved environment.
 
 Flower's real Server.fit orchestration and FedAvg strategy are used with in-process ClientProxy objects wrapping NumPyClient. This keeps laptop execution deterministic and avoids a mandatory Ray worker stack while preserving Flower's client/update/aggregation contracts. It is a logical-client transport, not the Ray Simulation Runtime or a physically separated deployment. Local training uses one worker and fixed client order to avoid global Torch RNG races.
 

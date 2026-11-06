@@ -2,7 +2,7 @@ import { ArrowUpRight, Check, Database, FlaskConical, Network, ShieldCheck } fro
 import { ResearchBackground } from "@/components/ui/research-background";
 import { Button } from "@/components/ui/button";
 import { LinePlot, MethodBars, SplitDiagram } from "@/components/research-charts";
-import { count, number, summarizeMetrics } from "@/lib/experiments";
+import { count, number, summarizeMetrics, datasetInfo } from "@/lib/experiments";
 import { SectionHeading } from "@/components/research-controls";
 import type { Study } from "@/types/experiments";
 
@@ -33,8 +33,8 @@ export function OverviewPage({ study }: { study: Study }) {
         <div className="chart-footer"><span>Balanced-data scenario</span><span>{test?.groups ?? "—"} held-out cases</span></div>
       </section>
       <section className="panel dataset-panel"><SectionHeading title="The data behind it" action={<Database size={19} className="muted-icon" />} />
-        <div className="source-name"><span className="source-symbol"><Database size={23} /></span><div><h3>NASA Milling Wear</h3><p>Primary public benchmark</p></div></div>
-        <dl className="dataset-facts"><div><dt>Recorded machining runs</dt><dd>{count(study.dataset.run_count)}</dd></div><div><dt>Measured wear labels</dt><dd>{count(study.dataset.labeled_runs)}</dd></div><div><dt>Recorded cases</dt><dd>{study.dataset.case_count}</dd></div><div><dt>Sensor channels</dt><dd>{study.dataset.channels.length}</dd></div></dl>
+        <div className="source-name"><span className="source-symbol"><Database size={23} /></span><div><h3>{datasetInfo(study.dataset.name).title}</h3><p>Public benchmark</p></div></div>
+        <dl className="dataset-facts"><div><dt>{study.dataset.name === "uniwear_nuaa" ? "Source experiments" : "Recorded machining runs"}</dt><dd>{count(study.dataset.run_count)}</dd></div><div><dt>{study.dataset.name === "uniwear_nuaa" ? "Labeled experiments" : "Measured wear labels"}</dt><dd>{count(study.dataset.labeled_runs)}</dd></div><div><dt>Recorded cases</dt><dd>{study.dataset.case_count}</dd></div><div><dt>Sensor channels</dt><dd>{study.dataset.channels.length}</dd></div></dl>
         <SplitDiagram splits={study.dataset.splits} /><a href="#dataset" className="text-link dataset-link">Inspect dataset <ArrowUpRight size={14} /></a>
       </section>
     </div>

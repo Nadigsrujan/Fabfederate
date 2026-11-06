@@ -85,3 +85,31 @@ def test_saved_actual_estimator_and_transform_are_explained(kind, tmp_path):
     np.testing.assert_allclose(result['predictions'], restored.predict(frame.iloc[[3]]))
     assert max(result['reconstruction_error']) < 1e-5
     assert result['settings']['model_kind'] == kind
+
+
+def test_zero_baseline_explanation_is_identified_and_explained():
+    from sklearn.dummy import DummyRegressor
+    from sklearn.impute import SimpleImputer
+    from sklearn.preprocessing import StandardScaler
+    from fabfederate.models.bundle import ModelBundle
+    frame = pd.DataFrame({'a': [0., 1., 2.], 'b': [1., 3., 2.]})
+    x = frame.to_numpy()
+    bundle = ModelBundle(list(frame), 'mm', 'mean',
+        DummyRegressor().fit(x, [0., .3, .6]), SimpleImputer().fit(x),
+        StandardScaler().fit(x))
+    result = explain_prediction(bundle, frame, frame.iloc[[0]])
+    diagnostic = result['diagnostics'][0]
+    assert diagnostic['status'] == 'constant_baseline'
+    assert diagnostic['influential_features'] == 0
+    assert 'same' in diagnostic['summary'].lower()
+    assert 'not a failed explanation' in diagnostic['summary'].lower()
+
+
+def test_learned_explanation_has_a_grounded_summary():
+    frame = pd.DataFrame([[0., 0.], [1., 1.]], columns=LinearBundle.feature_names)
+    sample = pd.DataFrame([[3., 2.]], columns=LinearBundle.feature_names)
+    result = explain_prediction(LinearBundle(), frame, sample)
+    diagnostic = result['diagnostics'][0]
+    assert diagnostic['status'] == 'attributed'
+    assert diagnostic['influential_features'] == 2
+    assert 'force rms' in diagnostic['summary']

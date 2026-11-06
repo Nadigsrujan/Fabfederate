@@ -13,6 +13,7 @@ def parser():
     commands = root.add_subparsers(dest="command", required=True)
     download = commands.add_parser("download", help="Retrieve and hash the NASA-linked archive")
     download.add_argument("--data-root", default="data/raw")
+    download.add_argument("--dataset", choices=["nasa", "uniwear"], default="nasa")
     download.add_argument("--force", action="store_true")
     for command in ("audit", "prepare", "study"):
         entry = commands.add_parser(command)
@@ -45,7 +46,11 @@ def main(argv=None):
     try:
         if args.command == "download":
             from fabfederate.data.acquisition import acquire_nasa
-            result = acquire_nasa(args.data_root, args.force)
+            if args.dataset == 'uniwear':
+                from fabfederate.data.uniwear import acquire_uniwear
+                result = acquire_uniwear(Path(args.data_root) / 'uniwear')
+            else:
+                result = acquire_nasa(args.data_root, args.force)
             print(json.dumps(result, indent=2))
         elif args.command in {"audit", "prepare", "study"}:
             config = load_config(args.config)
@@ -62,8 +67,16 @@ def main(argv=None):
                 print(run_study(config, explain=not args.no_explain).resolve())
             else:
                 from fabfederate.data.dataset import load_source
-                runs = load_source(config)
                 output = Path(config["output_dir"])
+                if config['dataset'] == 'uniwear_nuaa':
+                    from fabfederate.data.uniwear import prepare_uniwear
+                    prepared = prepare_uniwear(config, output)
+                    if args.command == 'audit':
+                        print((output / 'audit.json').read_text())
+                    else:
+                        print(f'{len(prepared.frame)} rows; {len(prepared.feature_names)} features; {output.resolve()}')
+                    return
+                runs = load_source(config)
                 if args.command == "audit":
                     from fabfederate.data.audit import audit_runs
                     result = audit_runs(runs)

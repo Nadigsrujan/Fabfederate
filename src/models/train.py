@@ -8,7 +8,8 @@ import re
 import numpy as np
 import pandas as pd
 from sklearn.dummy import DummyRegressor
-from sklearn.ensemble import RandomForestRegressor
+from sklearn.ensemble import RandomForestRegressor, ExtraTreesRegressor, HistGradientBoostingRegressor
+from sklearn.linear_model import Ridge
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import StandardScaler
 
@@ -75,10 +76,34 @@ def run_baselines(data: PreparedData, output_dir: Path, config: dict) -> dict[st
                   'median': DummyRegressor(strategy='median'),
                   'random_forest': RandomForestRegressor(n_estimators=int(config.get('rf_trees', 100)),
                                                          random_state=seed, n_jobs=1)}
+    searches = {}
+    if config.get('optimize_baselines', False):
+        grids = {
+            'random_forest': [RandomForestRegressor(n_estimators=150, min_samples_leaf=leaf,
+                               random_state=seed, n_jobs=1) for leaf in (1, 4, 12)],
+            'extra_trees': [ExtraTreesRegressor(n_estimators=150, min_samples_leaf=leaf,
+                             random_state=seed, n_jobs=1) for leaf in (1, 4, 12)],
+            'hist_gradient_boosting': [HistGradientBoostingRegressor(max_iter=120,
+                max_leaf_nodes=leaves, l2_regularization=1., random_state=seed)
+                for leaves in (7, 15)],
+            'ridge': [Ridge(alpha=alpha) for alpha in (.1, 10., 100.)],
+        }
+        for name, candidates in grids.items():
+            scores = []
+            for candidate in candidates:
+                candidate.fit(x, y)
+                scores.append(float(np.mean(np.abs(candidate.predict(vx) - vy))))
+            selected = int(np.argmin(scores))
+            estimators[name] = candidates[selected]
+            searches[name] = {'selection_split': 'validation', 'test_used': False,
+                'candidate_validation_mae': scores, 'selected_index': selected,
+                'selected_parameters': candidates[selected].get_params()}
     bundles = {}
     for name, estimator in estimators.items():
-        estimator.fit(x, y)
+        if name not in searches:
+            estimator.fit(x, y)
         metadata = training_metadata(data, train, config)
+        metadata['validation_search'] = searches.get(name)
         metadata.update(validation_mae=float(np.mean(np.abs(estimator.predict(vx) - vy))),
                         selected_epoch=None, training_budget='one estimator fit',
                         rf_preprocessing='same frozen train-only imputer/scaler; scaling does not '

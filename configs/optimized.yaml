@@ -1,0 +1,16 @@
+# Same fixed NASA case split as nasa-final. Neural settings chosen on validation only.
+data_path: data/raw/nasa/3. Milling/mill.mat
+output_dir: artifacts/experiments/nasa-optimized
+seeds: [11, 22, 33]
+scenarios: [iid, condition, quantity, label, few_shot]
+hidden_dims: [32, 16]
+dropout: 0.0
+learning_rate: 0.001
+batch_size: 32
+epochs: 90
+rounds: 30
+local_epochs: 3
+mu_grid: [0.0, 0.001, 0.01]
+optimize_baselines: true
+explanation_samples: 2
+max_background: 16

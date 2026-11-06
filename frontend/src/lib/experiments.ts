@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import type { ExperimentOption, MetricRow, Route, Study } from "@/types/experiments";
 
 export const methodNames: Record<string, string> = {
-  fedavg: "FedAvg", fedprox: "FedProx", centralized_mlp: "Centralized MLP", random_forest: "Random forest",
+  extra_trees: "Extra trees", hist_gradient_boosting: "Gradient boosting", ridge: "Ridge regression", fedavg: "FedAvg", fedprox: "FedProx", centralized_mlp: "Centralized MLP", random_forest: "Random forest",
   mean: "Mean baseline", median: "Median baseline", local_client_0: "Client A only", local_client_1: "Client B only", local_client_2: "Client C only",
 };
 export const scenarioNames: Record<string, string> = { iid: "Balanced data", condition: "Machining conditions", quantity: "Unequal data volumes", label: "Wear distribution", few_shot: "Limited labels" };
@@ -10,7 +10,7 @@ export const routeNames: Record<Route, string> = { overview: "Overview", experim
 export const methodName = (name: string) => methodNames[name] ?? name;
 export const number = (value: number | null | undefined, digits = 4) => value != null && Number.isFinite(value) ? value.toFixed(digits) : "—";
 export const count = (value: number) => new Intl.NumberFormat("en").format(value);
-export const experimentName = (id: string) => ({ "nasa-final": "NASA main study", "nasa-smoke": "NASA smoke test", "nasa-efficiency": "NASA efficiency study", "nasa-spectral": "NASA spectral study", "nasa-reproduction": "NASA reproduction" })[id] ?? id;
+export const experimentName = (id: string) => ({ "nasa-optimized": "NASA optimized study", "uniwear-nuaa": "NUAA additional benchmark", "nasa-final": "NASA main study", "nasa-smoke": "NASA smoke test", "nasa-efficiency": "NASA efficiency study", "nasa-spectral": "NASA spectral study", "nasa-reproduction": "NASA reproduction" })[id] ?? id;
 
 export async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(path, init);
@@ -61,4 +61,18 @@ export function summarizeMetrics(rows: MetricRow[]) {
     rmse: values.reduce((sum, row) => sum + row.rmse, 0) / values.length, seeds: new Set(values.map((row) => row.seed)).size,
     count: values[0].count, groups: values[0].groups,
   })).sort((a, b) => a.mae - b.mae);
+}
+
+
+export function datasetInfo(id: string) {
+  if (id === "uniwear_nuaa") return {
+    title: "Uniwear · NUAA milling", url: "https://github.com/katulu-io/uniwear-dataset",
+    description: "Nine NUAA orthogonal experiments from the publisher-smoothed Uniwear release. Held-out experiments evaluate derived wear targets in mm.",
+    limitation: "Signals and wear targets were downsampled and smoothed by the publisher. Rows are not independent original wear measurements. NUAA experiments are evaluated separately from NASA and PHM2010.",
+  };
+  return { title: id === "nasa" ? "NASA Milling Wear" : id,
+    url: "https://www.nasa.gov/intelligent-systems-division/discovery-and-systems-health/pcoe/pcoe-data-set-repository/",
+    description: "Recorded milling experiments with measured flank wear (VB). Acquired from the archive linked by NASA PCoE.",
+    limitation: "Wear was measured after selected runs. Missing labels are excluded, never interpolated. NASA cases are not verified independent physical tools. Campus validation remains conditional.",
+  };
 }

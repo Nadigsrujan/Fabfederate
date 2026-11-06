@@ -228,3 +228,19 @@ def test_explanation_reference_is_bounded_and_train_only(api, monkeypatch):
     assert len(references[0]) == 16
     assert set(references[0].force_rms) <= {1., 2.}
     assert result.json()['explanation']['prediction'] == pytest.approx(.15)
+
+
+def test_operator_measurement_is_saved_for_review_without_changing_labels(api):
+    client, root, path = api
+    original = pd.read_parquet(path / 'features.parquet').wear_target.tolist()
+    response = client.post('/api/experiments/nasa-final/measurements', json={
+        'model': 'mean', 'sample_id': '3', 'measured_wear': .19, 'wear_unit': 'mm'})
+    assert response.status_code == 201
+    record = json.loads((root/'feedback/measurements.jsonl').read_text())
+    assert record['used_for_training'] is False
+    assert record['status'] == 'operator_entered_pending_review'
+    assert pd.read_parquet(path/'features.parquet').wear_target.tolist() == original
+    assert client.post('/api/experiments/nasa-final/measurements', json={
+        'model': 'mean', 'sample_id': '3', 'measured_wear': -1., 'wear_unit': 'mm'}).status_code == 422
+    assert client.post('/api/experiments/nasa-final/measurements', json={
+        'model': 'mean', 'sample_id': '3', 'measured_wear': .2, 'wear_unit': 'um'}).status_code == 422

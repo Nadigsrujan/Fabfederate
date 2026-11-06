@@ -23,7 +23,8 @@ export interface Sample { id: string; run_id: string; group_id: string; window_i
 export interface Prediction {
   model: string; sample: { run_id: string; group_id: string; window_id: string | number; split: string } | null;
   predicted_wear: number; measured_wear: number | null; wear_unit: string; features: { name: string; value: number }[];
-  explanation: { feature_names: string[]; values: number[]; base_value: number; prediction: number; reconstruction_error: number; runtime_seconds: number } | null;
+  explanation: { feature_names: string[]; values: number[]; base_value: number; prediction: number; reconstruction_error: number; runtime_seconds: number; diagnostic?: { status: "constant_baseline" | "no_local_effect" | "attributed"; summary: string; influential_features: number; reference_prediction_range: number } } | null;
+  advisory?: { status: string; message: string; out_of_range_features: number; policy: string };
   limitations: string[];
 }
 export type Route = "overview" | "experiments" | "clients" | "dataset" | "estimate";

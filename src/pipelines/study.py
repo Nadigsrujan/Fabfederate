@@ -92,7 +92,7 @@ def run_study(config: dict, explain: bool = True) -> Path:
                              ("numpy", "pandas", "scipy", "scikit-learn", "torch", "flwr", "shap")}}
     write_json(directory / "manifest.json", manifest)
     logging.getLogger("flwr").setLevel(logging.WARNING)
-    runs = load_source(config)
+    runs = None if config["dataset"] == "uniwear_nuaa" else load_source(config)
     metric_rows, prediction_frames, round_frames, robustness_rows, attribution_rows = [], [], [], [], []
     limited_label_rows = []
     default_saved = False
@@ -100,7 +100,11 @@ def run_study(config: dict, explain: bool = True) -> Path:
         for scenario in config["scenarios"]:
             preparation = dict(config, seed=config["split_seed"], scenario=scenario)
             try:
-                prepared = prepare_dataset(runs, directory / "prepared" / scenario, preparation)
+                if config['dataset'] == 'uniwear_nuaa':
+                    from fabfederate.data.uniwear import prepare_uniwear
+                    prepared = prepare_uniwear(preparation, directory / 'prepared' / scenario)
+                else:
+                    prepared = prepare_dataset(runs, directory / "prepared" / scenario, preparation)
             except ValueError as error:
                 if scenario == "iid":
                     raise
@@ -205,7 +209,9 @@ def run_study(config: dict, explain: bool = True) -> Path:
                 for index in range(1, len(rows)):
                     stability.append({"method": key[0], "scenario": key[1], "run_id": key[2],
                                       "window_id": key[3], "seed_a": rows[0].seed, "seed_b": rows[index].seed,
-                                      "top5_overlap": top_k_agreement(rows[0].attributions, rows[index].attributions),
+                                      "top_k": min(5, len(rows[0].attributions)),
+                                      "top_k_overlap": top_k_agreement(rows[0].attributions, rows[index].attributions,
+                                                                      k=min(5, len(rows[0].attributions))),
                                       "sign_agreement": sign_agreement(rows[0].attributions, rows[index].attributions)})
             write_json(directory / "attributions.json", attribution_rows)
             if stability:
