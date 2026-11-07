@@ -1,29 +1,67 @@
 import { useId } from "react";
 import { number, methodName } from "@/lib/experiments";
 
-export const colors = { fedavg: "#3567e8", fedprox: "#237f84", centralized_mlp: "#9a77c4", median: "#8394a6", random_forest: "#b28b54" };
+export const colors = {
+  fedavg: "var(--signal)",
+  fedprox: "var(--sage)",
+  centralized_mlp: "var(--amber)",
+  median: "var(--neutral-trace)",
+  random_forest: "var(--orange)",
+};
 export interface Series { name: string; color: string; values: { x: number; y: number }[] }
 
 export function LinePlot({ series, compact = false }: { series: Series[]; compact?: boolean }) {
   const id = useId().replaceAll(":", "");
-  const points = series.flatMap((s) => s.values).filter((point) => Number.isFinite(point.x) && Number.isFinite(point.y));
+  const traces = series
+    .map((s) => ({ ...s, values: s.values.filter(({ x, y }) => Number.isFinite(x) && Number.isFinite(y)) }))
+    .filter((s) => s.values.length);
+  const points = traces.flatMap((s) => s.values);
   if (!points.length) return <p className="empty-inline">No recorded rounds for this selection.</p>;
-  const width = 720, height = compact ? 205 : 300, left = compact ? 5 : 52, right = 18, top = 20, bottom = compact ? 14 : 42;
+  const width = compact ? 500 : 720;
+  const height = compact ? 175 : 300;
+  const left = compact ? 43 : 52;
+  const right = width - 18;
+  const top = 15;
+  const baseline = height - 27;
   const maxX = Math.max(1, ...points.map((p) => p.x));
-  const minY = compact ? Math.min(...points.map((p) => p.y)) * .85 : 0;
-  const maxY = Math.max(minY + .01, ...points.map((p) => p.y)) * 1.08;
-  const x = (value: number) => left + value / maxX * (width - left - right);
-  const y = (value: number) => top + (maxY - value) / (maxY - minY) * (height - top - bottom);
-  const line = (values: Series["values"]) => values.filter((p) => Number.isFinite(p.y)).map((p, i) => `${i ? "L" : "M"}${x(p.x).toFixed(2)},${y(p.y).toFixed(2)}`).join(" ");
+  const maxY = Math.max(.01, ...points.map((p) => p.y)) * 1.08;
+  const x = (value: number) => left + value / maxX * (right - left);
+  const y = (value: number) => baseline - value / maxY * (baseline - top);
+  const steps = Math.min(maxX, 5);
+  const xTicks = Array.from({ length: steps + 1 }, (_, i) => Math.round(maxX * i / steps));
+
   return <div className={compact ? "line-plot compact-plot" : "line-plot"}>
-    <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={`Recorded validation MAE through ${maxX} rounds`}>
-      <defs><linearGradient id={`fill-${id}`} x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={series[0]?.color} stopOpacity={compact ? ".22" : ".09"} /><stop offset="100%" stopColor={series[0]?.color} stopOpacity="0" /></linearGradient></defs>
-      {[0, 1, 2, 3, 4].map((tick) => { const yy = top + tick / 4 * (height - top - bottom); return <g key={tick}><line className="chart-grid" x1={left} y1={yy} x2={width-right} y2={yy} />{!compact && <text x={left-12} y={yy+4} textAnchor="end">{number(maxY - tick / 4 * (maxY-minY), 2)}</text>}</g>; })}
-      {series.map((s, index) => <g key={s.name}>{index === 0 && <path d={`${line(s.values)} L${x(s.values.at(-1)?.x ?? 0)},${height-bottom} L${x(s.values[0]?.x ?? 0)},${height-bottom} Z`} fill={`url(#fill-${id})`} />}<path d={line(s.values)} fill="none" stroke={s.color} strokeWidth={compact ? 2.5 : 2.4} strokeLinecap="round" strokeLinejoin="round" /></g>)}
-      {!compact && [0, 1, 2, 3, 4, 5].map((tick) => <text key={tick} x={x(maxX*tick/5)} y={height-16} textAnchor="middle">{Math.round(maxX*tick/5)}</text>)}
+    <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={`Recorded validation MAE through round ${maxX}`}>
+      <defs>
+        <linearGradient id={`fill-${id}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={traces[0].color} stopOpacity={compact ? ".28" : ".12"} />
+          <stop offset="100%" stopColor={traces[0].color} stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      {[0, 1, 2, 3, 4].map((tick) => {
+        const value = maxY * tick / 4;
+        return <g key={tick}>
+          <line className="chart-grid" x1={left} y1={y(value)} x2={right} y2={y(value)} />
+          <text x={left - 7} y={y(value) + 4} textAnchor="end">{number(value, maxY < .08 ? 3 : 2)}</text>
+        </g>;
+      })}
+      {xTicks.map((tick) => <g key={tick}>
+        {compact && <line className="chart-grid" x1={x(tick)} y1={top} x2={x(tick)} y2={baseline} />}
+        <text x={x(tick)} y={height - 7} textAnchor="middle">{tick}</text>
+      </g>)}
+      {traces.map((s, index) => {
+        const first = s.values[0];
+        const last = s.values[s.values.length - 1];
+        const path = s.values.map((p, i) => `${i ? "L" : "M"}${x(p.x)},${y(p.y)}`).join(" ");
+        return <g key={s.name}>
+          {index === 0 && <path d={`${path} L${x(last.x)},${baseline} L${x(first.x)},${baseline} Z`} fill={`url(#fill-${id})`} />}
+          <path className={compact ? "chart-trace" : undefined} d={path} fill="none" stroke={s.color} strokeWidth={compact ? 2 : 2.4} strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+          {compact && <circle className="chart-trace" cx={x(last.x)} cy={y(last.y)} r="4" fill={s.color} />}
+        </g>;
+      })}
     </svg>
-    {!compact && <div className="chart-axis-labels"><span>Validation error (mm)</span><span>Communication rounds</span></div>}
-    <div className="chart-legend">{series.map((s) => <span key={s.name}><i style={{ backgroundColor: s.color }} />{s.name}</span>)}</div>
+    <div className="chart-axis-labels"><span>Validation MAE (mm)</span><span>Communication rounds</span></div>
+    {!compact && <div className="chart-legend">{traces.map((s) => <span key={s.name}><i style={{ backgroundColor: s.color }} />{s.name}</span>)}</div>}
   </div>;
 }
 
@@ -34,7 +72,7 @@ export function MethodBars({ rows, showAll = false }: { rows: { method: string; 
   return <div className="method-bars" role="list" aria-label="Mean absolute error by method">
     {chosen.map((row) => <div className={`method-bar-row ${row.method === "fedavg" ? "featured-method" : ""}`} key={row.method} role="listitem">
       <div className="method-bar-label"><span>{methodName(row.method)}</span>{row.method === "fedavg" && <small>Federated</small>}</div>
-      <div className="bar-track"><div className="bar-fill" style={{ width: `${row.mae/max*100}%`, backgroundColor: colors[row.method as keyof typeof colors] ?? "#afbdcc" }} /></div>
+      <div className="bar-track"><div className="bar-fill" style={{ width: `${row.mae/max*100}%`, backgroundColor: colors[row.method as keyof typeof colors] ?? "var(--neutral-trace)" }} /></div>
       <span className="bar-number">{number(row.mae)}</span>
     </div>)}
   </div>;

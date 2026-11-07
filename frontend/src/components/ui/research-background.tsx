@@ -8,6 +8,7 @@ export interface ResearchBackgroundProps {
   className?: string;
   children?: ReactNode;
   intensity?: "subtle" | "medium" | "strong";
+  animated?: boolean;
 }
 
 interface Beam {
@@ -29,7 +30,7 @@ function createBeam(width: number, height: number): Beam {
 }
 
 /** Decorative research header with container sizing and reduced-motion support. */
-export function ResearchBackground({ className, children, intensity = "strong" }: ResearchBackgroundProps) {
+export function ResearchBackground({ className, children, intensity = "strong", animated = true }: ResearchBackgroundProps) {
   const hostRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const beamsRef = useRef<Beam[]>([]);
@@ -92,7 +93,7 @@ export function ResearchBackground({ className, children, intensity = "strong" }
     };
     const resume = () => {
       stop();
-      if (!reducedMotion && visible && !document.hidden) {
+      if (animated && !reducedMotion && visible && !document.hidden) {
         animationFrameRef.current = requestAnimationFrame(animate);
       }
     };
@@ -128,15 +129,15 @@ export function ResearchBackground({ className, children, intensity = "strong" }
       window.removeEventListener("resize", updateCanvasSize);
       document.removeEventListener("visibilitychange", resume);
     };
-  }, [intensity, reducedMotion]);
+  }, [animated, intensity, reducedMotion]);
 
   return (
     <div ref={hostRef} className={cn("relative min-h-screen w-full overflow-hidden bg-neutral-950", className)}>
       <canvas ref={canvasRef} aria-hidden="true" className="pointer-events-none absolute inset-0" style={{ filter: "blur(15px)" }} />
-      <motion.div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-neutral-950/5"
+      {animated && <motion.div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-neutral-950/5"
         animate={reducedMotion ? { opacity: 0.05 } : { opacity: [0.05, 0.15, 0.05] }}
         transition={{ duration: 10, ease: "easeInOut", repeat: reducedMotion ? 0 : Infinity }}
-        style={{ backdropFilter: "blur(50px)" }} />
+        style={{ backdropFilter: "blur(50px)" }} />}
       <div className="relative z-10">{children}</div>
     </div>
   );
